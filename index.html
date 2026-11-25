@@ -141,10 +141,8 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
 .ccard header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ccard h3{font-size:20px}
 .ccard header .btn{margin-left:auto}
-.pal{display:flex;flex-wrap:wrap;gap:6px}
-.pal button{width:34px;height:34px;border-radius:9px;border:2px solid var(--line);cursor:pointer;padding:0}
-.pal button.on{outline:3px solid var(--accent);outline-offset:2px}
-#imgCmp .th{cursor:crosshair;touch-action:none;width:170px}
+#imgCmp .th{width:150px}
+#drawBoard{cursor:crosshair}
 .ccard .th{width:130px;aspect-ratio:1/1;border-radius:10px;border:1px solid var(--line);flex:none}
 #imgCmp,#sndCmp{grid-template-columns:minmax(0,1fr)}
 .cbody{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
@@ -154,6 +152,22 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
 .tag:empty{display:none}
 .tag.same{background:var(--accent-soft);color:var(--good)}
 .tag.diff{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+table.mltable{border-collapse:collapse;font-size:14px;width:100%;min-width:560px;font-variant-numeric:tabular-nums}
+.mltable th,.mltable td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+.mltable thead th{font-size:12px;color:var(--muted);font-weight:800;position:static;background:none}
+.mltable .feat{background:var(--accent-soft)}
+.mltable .ans{background:color-mix(in srgb,var(--c2) 18%,var(--surface))}
+.mltable thead .feat,.mltable thead .ans{color:var(--ink)}
+.mltable .err{color:var(--muted);font-size:13px}
+.wlist{display:grid;gap:12px}
+.wrow{display:grid;grid-template-columns:56px minmax(0,1fr);gap:4px 12px;align-items:center}
+.wname{font-weight:800}
+.wbar{height:14px;background:var(--surface2);border-radius:99px;position:relative;overflow:hidden}
+.wbar::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--line)}
+.wbar i{position:absolute;left:50%;top:0;bottom:0;background:var(--accent);border-radius:0 99px 99px 0}
+.wbar i.neg{left:auto;right:50%;background:var(--bad);border-radius:99px 0 0 99px}
+.wtxt{grid-column:2;font-size:14px;color:var(--muted)}
+.wtxt b{color:var(--ink)}
 .judge{display:grid;gap:10px}
 .jhead{font-size:17px;margin-top:6px}
 .jrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
@@ -282,16 +296,40 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>2</b>숫자가 비슷하면 그림도 비슷합니다</div>
+    <div class="ptitle"><b>2</b>나만의 픽셀 그림 그리기</div>
+    <p class="pdesc">색을 고른 뒤 판의 칸을 누르거나 끌어서 자유롭게 그려 봅시다. 칠한 칸마다 R·G·B 숫자가 저장됩니다.</p>
+    <div class="grid2">
+      <div class="stack">
+        <canvas id="drawBoard" class="sq" aria-label="16×16 그림판. 칸을 누르거나 끌어서 색칠"></canvas>
+        <div class="controls">
+          <label class="chk"><input type="checkbox" id="drawNums"> 칸에 숫자 보기</label>
+          <button class="btn sm" id="drawClear">모두 지우기</button>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="pxhead">
+          <div class="swatch" id="paintSw"></div>
+          <div><div class="k">칠할 색</div><div class="pxpos num" id="paintVal"></div></div>
+        </div>
+        <div class="sliders">
+          <label class="sl" style="--sc:var(--ch-r)"><span>빨강 R</span><input type="range" id="dR" min="0" max="255" value="0"><output id="odR" class="num">0</output></label>
+          <label class="sl" style="--sc:var(--ch-g)"><span>초록 G</span><input type="range" id="dG" min="0" max="255" value="0"><output id="odG" class="num">0</output></label>
+          <label class="sl" style="--sc:var(--ch-b)"><span>파랑 B</span><input type="range" id="dB" min="0" max="255" value="0"><output id="odB" class="num">0</output></label>
+          <p class="hint">빨강·초록·파랑 숫자를 섞어 칠할 색을 만든 뒤 판에 그려 봅시다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>3</b>숫자가 비슷하면 그림도 비슷합니다</div>
     <p class="pdesc">두 그림에서 <b>같은 자리</b> 칸의 R·G·B 숫자를 그대로 비교합니다. 파란 테두리로 표시한 <b>눈이 있는 줄</b>의 숫자를 견주어 봅시다.</p>
-    <div class="controls"><span class="k">칠할 색</span><div class="pal" id="paintPal"></div></div>
-    <p class="hint">색을 고른 뒤 아래 그림의 칸을 누르거나 끌면 그 칸의 색이 바뀌고, 숫자와 닮은 정도가 다시 계산됩니다.</p>
     <div class="cmpgrid" id="imgCmp"></div>
     <p class="hint">닮은 정도 = 256칸 중에서 R·G·B 숫자가 비슷한 칸의 비율. 실제 AI는 여기에 더해 숫자 속에서 눈·귀·테두리 같은 모양 패턴을 찾아 비교합니다.</p>
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>3</b>인공지능의 판단</div>
+    <div class="ptitle"><b>4</b>인공지능의 판단</div>
     <div class="flowline"><span>그림</span><i>→</i><span>픽셀 값(숫자)</span><i>→</i><span>수치 패턴 비교·계산</span><i>→</i><span>판단</span></div>
     <p class="fact">인공지능은 픽셀 값의 <b>수치 패턴</b>을 학습하고, <b>수치 패턴 간의 유사성</b>을 비교하고 계산해서 판단합니다.</p>
     <div class="judge" id="imgJudge"></div>
@@ -309,8 +347,8 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
     <canvas id="vibConcept" style="height:170px"></canvas>
     <div class="stack">
       <h2>진동이란?</h2>
-      <p>물체가 <b>빠르게 왔다 갔다 떨리는 움직임</b>을 진동이라고 합니다. 말을 할 때 목에 손을 대면 떨림이 느껴지는데, 목 안의 성대가 진동하기 때문입니다.</p>
-      <p>소리는 이 진동이 <b>공기를 통해 전달</b>되는 것입니다. <b>진동 크기</b>가 클수록 큰 소리, 1초에 <b>진동하는 횟수</b>가 많을수록 높은 소리가 납니다.</p>
+      <p>소리는 물체의 <b>진동</b>으로 생긴 <b>파형</b>이 <b>공기를 통해 전달</b>되는 것입니다. 말을 할 때는 목 안의 성대가 진동하여 소리가 납니다.</p>
+      <p><b>진동 크기</b>가 클수록 큰 소리, <b>진동 횟수</b>가 많을수록 높은 소리가 납니다.</p>
     </div>
   </div>
 
@@ -374,7 +412,7 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
       <span class="k">토큰 (조각)</span><div class="chips" id="txtTok"></div>
       <span class="k">번호</span><div class="chips" id="txtIds"></div>
     </div>
-    <p class="hint">컴퓨터는 글자 대신 이 번호로 문장을 기억합니다. 사전에 없는 글자는 1번(모르는 토큰)이 됩니다.</p>
+    <p class="hint">컴퓨터는 글자 대신 이 번호로 문장을 기억합니다. 사전에 없는 글자는 1번(모르는 토큰)이 됩니다. 번호는 설명을 위해 정한 예시이며, 실제 AI는 모델마다 번호가 다릅니다.</p>
   </div>
 
   <div class="panel">
@@ -412,7 +450,6 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
       <div><span>키</span><b class="num">158<small>cm</small></b></div>
       <div><span>몸무게</span><b class="num">48<small>kg</small></b></div>
     </div>
-    <div class="flowline"><span>기온 · 강수량 · 점수 · 키를 숫자 그대로 입력</span><i>→</i><span>크기 · 차이 · 증가·감소 관계 계산</span></div>
   </header>
 
   <div class="panel">
@@ -429,29 +466,51 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>2</b>기온에 따른 아이스크림 판매량</div>
-    <p class="pdesc">기온과 아이스크림 판매량을 점으로 나타냅니다. 인공지능은 점들 사이를 가장 잘 지나가는 <b>직선(규칙)</b>을 찾아, 처음 보는 기온의 판매량도 예측합니다.</p>
+    <div class="ptitle"><b>2</b>특징과 정답으로 인공지능 학습시키기</div>
+    <p class="pdesc">하루의 <b>특징</b>(기온, 강수량, 주말 여부)과 그날의 <b>정답</b>(아이스크림 판매량)을 함께 알려 주면, 인공지능은 특징과 정답 사이의 관계를 스스로 찾아냅니다. 정답을 알려 주며 학습시키는 방법을 <b>지도 학습</b>이라고 합니다.</p>
+    <div class="strip"><table class="mltable" id="mlTable"></table></div>
+    <div class="controls">
+      <button class="btn primary" id="mlTrain">▶ 학습 시작</button>
+      <button class="btn sm" id="mlReset">처음부터 다시</button>
+      <span class="stat" id="mlStatus"></span>
+    </div>
     <div class="grid2">
-      <canvas id="iceChart" style="height:320px"></canvas>
       <div class="stack">
-        <div class="strip"><table><tbody id="iceTable"></tbody></table></div>
-        <div class="predict">
-          <label class="rowsel">내일 기온 <input type="range" id="newT" min="14" max="36" step="1" value="29"> <b class="num" id="newTv"></b></label>
-          <div class="k">예상 판매량</div>
-          <div class="val num" id="newIce"></div>
-        </div>
+        <div class="k">학습 횟수에 따른 평균 오차(개)</div>
+        <canvas id="mlLoss" style="height:220px"></canvas>
+      </div>
+      <div class="stack">
+        <div class="k">인공지능이 찾은 특징의 영향</div>
+        <div class="wlist" id="mlWeights"></div>
+        <p class="hint">학습을 반복할수록 오차가 줄어들고, 각 특징이 판매량에 주는 영향이 정해집니다.</p>
       </div>
     </div>
-    <p class="hint">기온과 판매량은 설명을 위해 만든 예시 데이터입니다. 이렇게 숫자를 예측하는 인공지능 모델을 <b>회귀 모델</b>이라고 합니다.</p>
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>3</b>인공지능의 판단</div>
+    <div class="ptitle"><b>3</b>학습한 모델로 예측하기</div>
+    <p class="pdesc">처음 보는 날의 특징을 넣으면, 학습한 모델이 판매량을 예측합니다. 숫자를 예측하는 이런 모델을 <b>회귀 모델</b>이라고 합니다.</p>
+    <div class="grid2">
+      <div class="sliders">
+        <label class="sl"><span>기온</span><input type="range" id="pT" min="14" max="36" value="29"><output id="opT" class="num"></output></label>
+        <label class="sl"><span>강수량</span><input type="range" id="pR" min="0" max="20" value="0"><output id="opR" class="num"></output></label>
+        <div class="controls"><span class="k">요일</span><div class="seg" id="pW"><button data-v="0" class="on">평일</button><button data-v="1">주말</button></div></div>
+      </div>
+      <div class="predict">
+        <div class="k">예상 판매량</div>
+        <div class="val num" id="pVal"></div>
+        <div class="stat num" id="pFormula"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>4</b>인공지능의 판단</div>
     <div class="flowline"><span>수치 값 입력</span><i>→</i><span>크기 · 차이 · 증가·감소 관계 계산</span><i>→</i><span>패턴 학습</span><i>→</i><span>판단</span></div>
     <p class="fact">인공지능은 <b>수치 값</b>을 입력받아 값의 <b>크기, 차이, 증가·감소 관계</b> 등을 계산하여 <b>패턴</b>을 학습합니다.</p>
     <h3 class="jhead">① 기온 데이터 간 관계 분석</h3>
     <div class="judge" id="numJudge"></div>
-    <h3 class="jhead">② 기온에 따른 아이스크림 판매량 관계 분석</h3>
+    <h3 class="jhead">② 특징과 아이스크림 판매량의 관계 분석</h3>
     <div class="judge" id="iceJudge"></div>
   </div>
 </section>
@@ -566,18 +625,26 @@ function renderImage(){
   $('#imgJudge').innerHTML = [['B','학생 B'],['C','고양이']].map(([k,nm])=>{ const pct=simPct(CMP.A,CMP[k]), ok=pct>=70;
     return `<div class="jrow"><span class="who">${nm}</span><span class="why">학생 A와 수치 패턴이 <b>${pct}%</b> 비슷함</span><span class="tag ${ok?'same':'diff'}">${ok?'AI 판단: 학생 A와 같은 학생':'AI 판단: 학생 아님'}</span></div>`; }).join('');
 }
-const PAINT = [['검정',[0,0,0]],['흰색',[255,255,255]],['살색',[255,214,170]],['갈색',[120,70,30]],['빨강',[220,30,40]],['주황',[240,150,50]],['초록',[30,110,60]],['하늘',[180,210,240]],['남색',[20,40,110]]];
-img.paint = PAINT[0][1];
+img.paint = [0,0,0];
+/* 2번 그림판: 흰 바탕 16×16에서 자유롭게 색칠 */
+const blankBoard = () => Array.from({length:16},()=>Array.from({length:16},()=>[255,255,255]));
+const draw = { pix:blankBoard(), nums:false, last:null };
+function renderDraw(){
+  drawPix($('#drawBoard'), draw.pix, {mode:'color', grid:true, nums:draw.nums});
+}
 function initImage(){
   buildImageCompare();
-  $('#paintPal').innerHTML = PAINT.map(([nm,c],i)=>`<button class="${i?'':'on'}" data-i="${i}" style="background:rgb(${c})" title="${nm}" aria-label="${nm}"></button>`).join('');
-  $('#paintPal').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; $$('#paintPal button').forEach(x=>x.classList.toggle('on',x===b)); img.paint=PAINT[+b.dataset.i][1]; });
-  let painting=false;
-  const paint=e=>{ const cv=e.target.closest('#imgCmp canvas.th'); if(!cv) return; const k=cv.closest('.ccard').dataset.k, b=cv.getBoundingClientRect();
-    const c=Math.floor((e.clientX-b.left)/b.width*16), r=Math.floor((e.clientY-b.top)/b.height*16); if(r<0||r>15||c<0||c>15) return;
-    const cur=CMP[k][r][c]; if(cur.join()===img.paint.join()) return; CMP[k][r][c]=[...img.paint]; renderImage(); };
-  $('#imgCmp').addEventListener('pointerdown', e=>{ if(e.target.closest('canvas.th')){ painting=true; paint(e); } });
-  $('#imgCmp').addEventListener('pointermove', e=>{ if(painting) paint(e); });
+  const setPaint=()=>{ img.paint=['R','G','B'].map(k=>+$('#d'+k).value); ['R','G','B'].forEach((k,i)=>$('#od'+k).textContent=img.paint[i]);
+    $('#paintSw').style.background=`rgb(${img.paint})`; $('#paintVal').textContent=`(${img.paint.join(', ')})`; };
+  ['R','G','B'].forEach(k=>$('#d'+k).addEventListener('input', setPaint)); setPaint();
+  const board=$('#drawBoard'); let painting=false;
+  const paint=e=>{ const b=board.getBoundingClientRect(), c=Math.floor((e.clientX-b.left)/b.width*16), r=Math.floor((e.clientY-b.top)/b.height*16);
+    if(r<0||r>15||c<0||c>15) return; draw.last=[r,c]; draw.pix[r][c]=[...img.paint]; renderDraw(); };
+  board.addEventListener('pointerdown', e=>{ painting=true; board.setPointerCapture(e.pointerId); paint(e); });
+  board.addEventListener('pointermove', e=>{ if(painting) paint(e); });
+  board.addEventListener('pointerup', ()=>painting=false); board.addEventListener('pointercancel', ()=>painting=false);
+  $('#drawNums').addEventListener('change', e=>{ draw.nums=e.target.checked; renderDraw(); });
+  $('#drawClear').addEventListener('click', ()=>{ draw.pix=blankBoard(); draw.last=null; renderDraw(); });
   window.addEventListener('pointerup', ()=>painting=false);
   segInit($('#imgMode'), v=>{ img.mode=v; renderImage(); });
   $('#imgNums').addEventListener('change', e=>{ img.nums=e.target.checked; renderImage(); });
@@ -906,48 +973,89 @@ function renderNumJudge(){
   renderIceJudge();
 }
 const jrows = rows => rows.map(([who,why,tag])=>`<div class="jrow"><span class="who">${who}</span><span class="tag same">${tag}</span><span class="why">${why}</span></div>`).join('');
-/* 기온(℃)과 아이스크림 판매량(개) 예시 데이터, 최소제곱 직선 */
-const ICE = [[18,42],[20,55],[22,61],[24,74],[26,80],[28,95],[30,102],[32,115]];
-const fit = (()=>{ const n=ICE.length, mx=ICE.reduce((s,p)=>s+p[0],0)/n, my=ICE.reduce((s,p)=>s+p[1],0)/n; let c=0,v=0; for(const [x,y] of ICE){ c+=(x-mx)*(y-my); v+=(x-mx)**2; } const a=c/v; return {a,b:my-a*mx}; })();
-function renderIce(){
-  const t=+$('#newT').value, pred=fit.a*t+fit.b;
-  $('#newTv').textContent=t+'℃'; $('#newIce').textContent=Math.round(pred)+'개';
-  $('#iceTable').innerHTML = `<tr><th>기온(℃)</th>${ICE.map(p=>`<td>${p[0]}</td>`).join('')}</tr><tr><th>판매량(개)</th>${ICE.map(p=>`<td style="background:var(--accent-soft);color:var(--accent);font-weight:700">${p[1]}</td>`).join('')}</tr>`;
-  const F=frame($('#iceChart'),320,{x:[14,36], y:[0,140], xt:[14,18,22,26,30,34], yt:[0,40,80,120], xl:'기온(℃) →', yl:'판매량(개)', pad:{t:30}});
-  const {ctx,X,Y}=F, acc=tok('--accent');
-  ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(X(14),Y(fit.a*14+fit.b)); ctx.lineTo(X(36),Y(fit.a*36+fit.b)); ctx.stroke();
-  ctx.fillStyle=tok('--ink'); for(const [x,y] of ICE){ ctx.beginPath(); ctx.arc(X(x),Y(y),5.5,0,Math.PI*2); ctx.fill(); }
-  ctx.setLineDash([4,4]); ctx.strokeStyle=tok('--muted'); ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(X(t),Y(0)); ctx.lineTo(X(t),Y(pred)); ctx.lineTo(X(14),Y(pred)); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle=tok('--surface'); ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(X(t),Y(pred),8,0,Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle=tok('--ink'); ctx.font=FONT(13,800); ctx.textAlign=t>30?'right':'left'; ctx.textBaseline='bottom'; ctx.fillText(`예상 ${Math.round(pred)}개`, X(t)+(t>30?-12:12), Y(pred)-8);
+/* 지도 학습 예시: 특징 [기온℃, 강수량mm, 주말(1)/평일(0)] → 정답 아이스크림 판매량(개) */
+const ML_DATA = [
+  [18,0,0,66],[20,5,0,63],[22,0,1,107],[24,0,0,88],[25,12,0,65],
+  [27,0,1,120],[28,3,0,95],[30,0,0,104],[31,0,1,136],[33,8,0,101]
+];
+const FEATS = [['기온','℃'],['강수량','mm'],['주말','']];
+const ML_EPOCHS = 200, ML_LR = 0.015;
+const mlStat = (()=>{ const n=ML_DATA.length, mean=[0,1,2].map(j=>ML_DATA.reduce((s,r)=>s+r[j],0)/n);
+  const sd=[0,1,2].map(j=>Math.sqrt(ML_DATA.reduce((s,r)=>s+(r[j]-mean[j])**2,0)/n)); return {mean,sd}; })();
+const ml = { w:[0,0,0], b:0, epoch:0, loss:[], timer:null };
+const zf = r => [0,1,2].map(j=>(r[j]-mlStat.mean[j])/mlStat.sd[j]);
+const mlPred = r => ml.b + zf(r).reduce((s,z,j)=>s+ml.w[j]*z,0);
+const mlMAE = () => ML_DATA.reduce((s,r)=>s+Math.abs(mlPred(r)-r[3]),0)/ML_DATA.length;
+function mlStep(){ const n=ML_DATA.length, gw=[0,0,0]; let gb=0;
+  for(const r of ML_DATA){ const e=mlPred(r)-r[3], z=zf(r); gb+=e; z.forEach((v,j)=>gw[j]+=e*v); }
+  ml.b-=ML_LR*gb/n*2; ml.w=ml.w.map((w,j)=>w-ML_LR*gw[j]/n*2); ml.epoch++; ml.loss.push(mlMAE()); }
+/* 표준화된 가중치를 원래 단위로: 특징이 1 늘 때 판매량 변화 */
+const mlUnitW = () => ml.w.map((w,j)=>w/mlStat.sd[j]);
+const mlBias = () => ml.b - ml.w.reduce((s,w,j)=>s+w*mlStat.mean[j]/mlStat.sd[j],0);
+function mlReset(){ clearInterval(ml.timer); ml.timer=null; ml.w=[0,0,0]; ml.b=0; ml.epoch=0; ml.loss=[mlMAE()]; renderML(); }
+function mlTrain(){ if(ml.timer) return; if(ml.epoch>=ML_EPOCHS) mlReset();
+  ml.timer=setInterval(()=>{ for(let i=0;i<4&&ml.epoch<ML_EPOCHS;i++) mlStep(); renderML(); if(ml.epoch>=ML_EPOCHS){ clearInterval(ml.timer); ml.timer=null; renderML(); } }, 40); }
+function renderML(){
+  const trained=ml.epoch>0;
+  let h=`<thead><tr><th></th><th colspan="3" class="feat">특징 (입력)</th><th class="ans">정답</th><th>AI 예측</th><th>오차</th></tr>
+    <tr><th>날</th>${FEATS.map(([nm,u])=>`<th class="feat">${nm}${u?`(${u})`:''}</th>`).join('')}<th class="ans">판매량(개)</th><th>판매량(개)</th><th></th></tr></thead><tbody>`;
+  ML_DATA.forEach((r,i)=>{ const p=mlPred(r), e=p-r[3];
+    h+=`<tr><td>${i+1}일째</td><td class="feat">${r[0]}</td><td class="feat">${r[1]}</td><td class="feat">${r[2]?'주말':'평일'}</td><td class="ans"><b>${r[3]}</b></td><td>${trained?Math.round(p):'?'}</td><td class="err">${trained?(e>=0?'+':'')+Math.round(e):''}</td></tr>`; });
+  $('#mlTable').innerHTML = h+'</tbody>';
+  const mae=ml.loss[ml.loss.length-1]||mlMAE();
+  $('#mlStatus').innerHTML = ml.timer ? `학습 중… <b>${ml.epoch}번</b> 반복, 평균 오차 <b>${mae.toFixed(1)}개</b>`
+    : trained ? `학습 완료: <b>${ml.epoch}번</b> 반복, 평균 오차 <b>${mae.toFixed(1)}개</b>` : '아직 학습하지 않았습니다. 예측값은 모두 0개에서 시작합니다.';
+  $('#mlTrain').textContent = ml.timer ? '학습 중…' : trained ? '▶ 다시 학습' : '▶ 학습 시작';
+  // 오차 그래프
+  const maxL=Math.ceil((ml.loss[0]||100)/20)*20;
+  const F=frame($('#mlLoss'),220,{x:[0,ML_EPOCHS], y:[0,maxL], xt:[0,50,100,150,200], yt:[0,maxL/2,maxL], xl:'학습 횟수 →'});
+  const {ctx,X,Y}=F; ctx.strokeStyle=tok('--accent'); ctx.lineWidth=3; ctx.beginPath();
+  ml.loss.forEach((l,i)=>{ i?ctx.lineTo(X(i),Y(l)):ctx.moveTo(X(i),Y(l)); }); ctx.stroke();
+  if(ml.loss.length){ const i=ml.loss.length-1; ctx.fillStyle=tok('--accent'); ctx.beginPath(); ctx.arc(X(i),Y(ml.loss[i]),5,0,Math.PI*2); ctx.fill(); }
+  // 가중치
+  const uw=mlUnitW(), maxAbs=Math.max(1,...ml.w.map(Math.abs));
+  const txt=[v=>`기온이 1℃ 오르면 <b>${v>=0?'+':''}${v.toFixed(1)}개</b>`, v=>`강수량이 1mm 늘면 <b>${v>=0?'+':''}${v.toFixed(1)}개</b>`, v=>`주말이면 <b>${v>=0?'+':''}${v.toFixed(0)}개</b>`];
+  $('#mlWeights').innerHTML = FEATS.map(([nm],j)=>`<div class="wrow"><span class="wname">${nm}</span><div class="wbar"><i class="${ml.w[j]<0?'neg':''}" style="width:${Math.abs(ml.w[j])/maxAbs*50}%"></i></div><span class="wtxt">${trained?txt[j](uw[j]):'학습 전'}</span></div>`).join('');
+  renderPredict(); renderIceJudge();
+}
+function renderPredict(){
+  const r=[+$('#pT').value, +$('#pR').value, +($('#pW .on')?.dataset.v||0)];
+  $('#opT').textContent=r[0]+'℃'; $('#opR').textContent=r[1]+'mm';
+  if(!ml.epoch){ $('#pVal').textContent='?'; $('#pFormula').textContent='먼저 2번에서 학습을 시켜 봅시다.'; return; }
+  const uw=mlUnitW(), b=mlBias();
+  $('#pVal').textContent=Math.max(0,Math.round(mlPred(r)))+'개';
+  $('#pFormula').innerHTML=`판매량 ≈ ${uw[0].toFixed(1)}×기온 ${uw[1]<0?'−':'+'} ${Math.abs(uw[1]).toFixed(1)}×강수량 + ${uw[2].toFixed(0)}×주말 ${b<0?'−':'+'} ${Math.abs(b).toFixed(0)}`;
 }
 function renderIceJudge(){
-  const t=+$('#newT').value, pred=Math.round(fit.a*t+fit.b), lo=ICE[0], hi=ICE[ICE.length-1];
-  const ups=ICE.slice(1).every((p,i)=>p[1]>ICE[i][1]);
+  const hi=ML_DATA.reduce((a,r)=>r[3]>a[3]?r:a), lo=ML_DATA.reduce((a,r)=>r[3]<a[3]?r:a);
+  const day=r=>`${r[0]}℃·${r[1]}mm·${r[2]?'주말':'평일'}`;
+  if(!ml.epoch){ $('#iceJudge').innerHTML = jrows([['크기·차이', `가장 많이 팔린 날(${day(hi)}) <b>${hi[3]}개</b>, 가장 적게 팔린 날(${day(lo)}) <b>${lo[3]}개</b>로 <b>${hi[3]-lo[3]}개</b> 차이가 납니다`, `차이 ${hi[3]-lo[3]}개`],['관계','2번에서 학습을 시키면 인공지능이 찾은 관계가 여기에 나타납니다','학습 전']]); return; }
+  const uw=mlUnitW(), r=[+$('#pT').value, +$('#pR').value, +($('#pW .on')?.dataset.v||0)], p=Math.max(0,Math.round(mlPred(r)));
   $('#iceJudge').innerHTML = jrows([
-    ['크기·차이', `가장 더운 ${hi[0]}℃에 <b>${hi[1]}개</b>, 가장 시원한 ${lo[0]}℃에 <b>${lo[1]}개</b>로 <b>${hi[1]-lo[1]}개</b> 차이가 납니다`, `차이 ${hi[1]-lo[1]}개`],
-    ['증가·감소', `기온이 올라갈 때 판매량이 ${ups?'<b>한 번도 빠짐없이 늘어났습니다</b>':'대체로 늘어났습니다'}`, '기온 ▲ → 판매량 ▲'],
-    ['관계', `기온이 <b>1℃</b> 오를 때마다 판매량이 약 <b>${fit.a.toFixed(1)}개</b> 늘어나는 관계입니다`, `1℃당 약 ${fit.a.toFixed(1)}개 증가`],
-    ['예측', `내일 기온이 <b>${t}℃</b>라면 판매량은 약 <b>${pred}개</b>로 예측합니다`, `AI 판단: 약 ${pred}개`]
+    ['크기·차이', `가장 많이 팔린 날(${day(hi)}) <b>${hi[3]}개</b>, 가장 적게 팔린 날(${day(lo)}) <b>${lo[3]}개</b>로 <b>${hi[3]-lo[3]}개</b> 차이가 납니다`, `차이 ${hi[3]-lo[3]}개`],
+    ['증가 관계', `기온이 1℃ 오를 때마다 판매량이 약 <b>${uw[0].toFixed(1)}개</b> 늘어납니다. 주말에는 약 <b>${uw[2].toFixed(0)}개</b> 더 팔립니다`, '기온 ▲·주말 → 판매량 ▲'],
+    ['감소 관계', `강수량이 1mm 늘 때마다 판매량이 약 <b>${Math.abs(uw[1]).toFixed(1)}개</b> 줄어듭니다`, '강수량 ▲ → 판매량 ▼'],
+    ['예측', `${r[0]}℃, ${r[1]}mm, ${r[2]?'주말':'평일'}인 날은 약 <b>${p}개</b> 팔릴 것으로 예측합니다`, `AI 판단: 약 ${p}개`]
   ]);
 }
-function renderNumber(){ renderTemp(); renderIce(); renderNumJudge(); }
+function renderNumber(){ renderTemp(); renderNumJudge(); renderML(); }
 function initNumber(){
   $('#tempChart').addEventListener('pointerdown', e=>{ const r=e.currentTarget.getBoundingClientRect(); const i=Math.floor((e.clientX-r.left-TPAD.l)/((r.width-TPAD.l-TPAD.r)/7)); if(i>=0&&i<7){ numS.day=i; renderTemp(); } });
-  $('#newT').addEventListener('input', ()=>{ renderIce(); renderIceJudge(); });
+  if(!ml.loss.length) ml.loss=[mlMAE()];
+  $('#mlTrain').addEventListener('click', mlTrain);
+  $('#mlReset').addEventListener('click', mlReset);
+  ['pT','pR'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ renderPredict(); renderIceJudge(); }));
+  segInit($('#pW'), ()=>{ renderPredict(); renderIceJudge(); });
 }
 
 /* ================= router ================= */
-const R = { home:()=>{}, image:()=>{ renderImage(); drawPixConcept(); }, sound:()=>{ renderSound(); drawVibConcept(); }, text:renderText, number:renderNumber };
+const R = { home:()=>{}, image:()=>{ renderImage(); renderDraw(); drawPixConcept(); }, sound:()=>{ renderSound(); drawVibConcept(); }, text:renderText, number:renderNumber };
 function current(){ const h=location.hash.slice(1); return R[h]?h:'home'; }
 function route(scroll){ const v=current(); for(const k in R) $('#view-'+k).hidden=k!==v; $('#topnav').hidden=v==='home';
   $$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v)); R[v](); if(scroll) window.scrollTo(0,0); }
 function drawPixConcept(){
   const cv=$('#pixConcept'); if(!cv||!cv.clientWidth) return; const {ctx,w,h}=setupCanvas(cv,150), P=img.A, ink=tok('--ink'), acc=tok('--accent');
-  for(let y=0;y<16;y++) for(let x=0;x<16;x++){ ctx.fillStyle=`rgb(${P[y][x]})`; ctx.fillRect(10+x*2,40+y*2,2,2); }
-  ctx.fillStyle=tok('--muted'); ctx.font=FONT(11,700); ctx.textAlign='center'; ctx.fillText('원래 크기',26,92);
-  ctx.fillStyle=acc; ctx.font=FONT(18,800); ctx.fillText('→',60,62); ctx.font=FONT(11,700); ctx.fillText('확대',60,82);
-  const s=Math.min(130,w-100), c=s/16, x0=w-s-6, y0=6;
+  const s=Math.min(130,w-20), c=s/16, x0=(w-s)/2, y0=6;
   for(let y=0;y<16;y++) for(let x=0;x<16;x++){ ctx.fillStyle=`rgb(${P[y][x]})`; ctx.fillRect(x0+x*c,y0+y*c,c+0.5,c+0.5); }
   ctx.strokeStyle='rgba(120,135,160,.4)'; ctx.lineWidth=1; ctx.beginPath(); for(let i=0;i<=16;i++){ ctx.moveTo(x0+i*c,y0); ctx.lineTo(x0+i*c,y0+s); ctx.moveTo(x0,y0+i*c); ctx.lineTo(x0+s,y0+i*c); } ctx.stroke();
   ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.strokeRect(x0+6*c,y0+5*c,c,c);
