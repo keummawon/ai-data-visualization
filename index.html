@@ -80,6 +80,11 @@ a:focus-visible,button:focus-visible,input:focus-visible,canvas:focus-visible{ou
 .vals span{font-size:13px;font-weight:800;color:var(--muted)}
 .vals b{font-size:26px;color:var(--accent);line-height:1.1}
 .vals small{font-size:14px;margin-left:2px;color:var(--ink)}
+.concept{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 22px;margin-top:18px}
+.concept h2{font-size:21px}
+.concept p{max-width:62ch}
+.concept p b{color:var(--accent)}
+@media(max-width:680px){.concept{grid-template-columns:minmax(0,1fr)}}
 .flowline .fstep{display:inline-flex;align-items:center;gap:8px;font-style:normal}
 .flowline i{font-style:normal;color:var(--accent);font-weight:800}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;display:grid;gap:16px;margin-top:18px;min-width:0}
@@ -136,6 +141,10 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
 .ccard header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ccard h3{font-size:20px}
 .ccard header .btn{margin-left:auto}
+.pal{display:flex;flex-wrap:wrap;gap:6px}
+.pal button{width:34px;height:34px;border-radius:9px;border:2px solid var(--line);cursor:pointer;padding:0}
+.pal button.on{outline:3px solid var(--accent);outline-offset:2px}
+#imgCmp .th{cursor:crosshair;touch-action:none;width:170px}
 .ccard .th{width:130px;aspect-ratio:1/1;border-radius:10px;border:1px solid var(--line);flex:none}
 #imgCmp,#sndCmp{grid-template-columns:minmax(0,1fr)}
 .cbody{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
@@ -146,6 +155,7 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
 .tag.same{background:var(--accent-soft);color:var(--good)}
 .tag.diff{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
 .judge{display:grid;gap:10px}
+.jhead{font-size:17px;margin-top:6px}
 .jrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
 .jrow .who{font-size:18px;font-weight:800}
 .jrow .tag{font-size:15px;padding:6px 14px;margin-left:auto}
@@ -231,6 +241,14 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
     <h1>그림은 숫자가 적힌 작은 칸들입니다</h1>
     <div class="flowline"><span>그림</span><i>→</i><span>작은 칸(픽셀)으로 나누기</span><i>→</i><span>칸마다 색깔 숫자</span></div>
   </header>
+  <div class="concept">
+    <canvas id="pixConcept" style="height:150px"></canvas>
+    <div class="stack">
+      <h2>픽셀(Pixel)이란?</h2>
+      <p>디지털 사진을 아주 크게 확대하면 <b>작은 네모 칸</b>들이 보입니다. 이 칸 하나하나를 <b>픽셀</b>이라고 합니다.</p>
+      <p>픽셀은 그림(picture)을 이루는 <b>가장 작은 단위</b>이며, 픽셀 하나는 <b>한 가지 색</b>만 나타냅니다. 픽셀이 많을수록(해상도가 높을수록) 그림이 더 정교합니다.</p>
+    </div>
+  </div>
 
   <div class="panel">
     <div class="ptitle"><b>1</b>그림의 칸을 눌러 봅시다</div>
@@ -266,6 +284,8 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
   <div class="panel">
     <div class="ptitle"><b>2</b>숫자가 비슷하면 그림도 비슷합니다</div>
     <p class="pdesc">두 그림에서 <b>같은 자리</b> 칸의 R·G·B 숫자를 그대로 비교합니다. 파란 테두리로 표시한 <b>눈이 있는 줄</b>의 숫자를 견주어 봅시다.</p>
+    <div class="controls"><span class="k">칠할 색</span><div class="pal" id="paintPal"></div></div>
+    <p class="hint">색을 고른 뒤 아래 그림의 칸을 누르거나 끌면 그 칸의 색이 바뀌고, 숫자와 닮은 정도가 다시 계산됩니다.</p>
     <div class="cmpgrid" id="imgCmp"></div>
     <p class="hint">닮은 정도 = 256칸 중에서 R·G·B 숫자가 비슷한 칸의 비율. 실제 AI는 여기에 더해 숫자 속에서 눈·귀·테두리 같은 모양 패턴을 찾아 비교합니다.</p>
   </div>
@@ -285,6 +305,14 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
     <h1>목소리는 진동 크기를 잰 숫자들입니다</h1>
     <div class="flowline"><span>목소리</span><i>→</i><span>아주 짧은 간격으로 진동 크기 재기</span><i>→</i><span>진동 크기 숫자</span></div>
   </header>
+  <div class="concept">
+    <canvas id="vibConcept" style="height:170px"></canvas>
+    <div class="stack">
+      <h2>진동이란?</h2>
+      <p>물체가 <b>빠르게 왔다 갔다 떨리는 움직임</b>을 진동이라고 합니다. 말을 할 때 목에 손을 대면 떨림이 느껴지는데, 목 안의 성대가 진동하기 때문입니다.</p>
+      <p>소리는 이 진동이 <b>공기를 통해 전달</b>되는 것입니다. <b>진동 크기</b>가 클수록 큰 소리, 1초에 <b>진동하는 횟수</b>가 많을수록 높은 소리가 납니다.</p>
+    </div>
+  </div>
 
   <div class="panel">
     <div class="ptitle"><b>1</b>"인공지능 수업이 좋아"를 듣고 모양을 봅시다</div>
@@ -327,11 +355,19 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
   <header class="vhead">
     <span class="dlabel">텍스트 데이터</span>
     <h1>단어는 번호와 좌표로 바뀝니다</h1>
-    <div class="flowline"><span>문장</span><i>→</i><span>토큰</span><i>→</i><span>임베딩</span></div>
+    <div class="flowline"><span>문장</span><i>→</i><span>문자 코드</span><i>→</i><span>토큰</span><i>→</i><span>임베딩</span></div>
   </header>
 
   <div class="panel">
-    <div class="ptitle"><b>1</b>문장을 토큰(조각)으로 나눠 봅시다</div>
+    <div class="ptitle"><b>1</b>문자 코드: 글자마다 정해진 번호</div>
+    <p class="pdesc">컴퓨터는 글자를 그대로 저장하지 못합니다. 글자마다 정해진 번호(<b>문자 코드</b>)를 붙이고, 그 번호를 <b>이진수</b>로 바꿔 저장합니다. 영어는 <b>아스키 코드</b>, 한글을 포함한 세계의 문자는 <b>유니코드</b>를 사용합니다. 영어 이름 약자나 한글을 입력해 봅시다.</p>
+    <input id="codeIn" class="tin" value="AI" maxlength="10" aria-label="문자 코드로 바꿀 글자">
+    <div class="strip" id="codeTable"></div>
+    <p class="fact">문자 코드는 <b>글자 하나</b>에 번호를 붙입니다. 인공지능은 한 걸음 더 나아가 <b>토큰(글자 묶음)</b>에 번호를 붙이고, 뜻을 담은 <b>좌표(임베딩)</b>로 바꿉니다.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>2</b>문장을 토큰(조각)으로 나눠 봅시다</div>
     <input id="txtIn" class="tin" value="나는 인공지능 수업이 좋다" maxlength="30" aria-label="문장 입력">
     <div class="wordbtns" id="txtEx"></div>
     <div class="flow">
@@ -342,7 +378,7 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>2</b>단어를 좌표로 나타내기 (임베딩)</div>
+    <div class="ptitle"><b>3</b>단어를 좌표로 나타내기 (임베딩)</div>
     <p class="pdesc">단어마다 <b>[가로, 세로]</b> 숫자를 붙여 지도 위 화살표로 나타냅니다. 이것을 <b>임베딩</b>이라고 합니다. 화살표 방향이 비슷하면 뜻도 비슷합니다. 단어 두 개를 골라 봅시다.</p>
     <div class="grid2">
       <div class="stack">
@@ -357,7 +393,7 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>3</b>인공지능의 판단</div>
+    <div class="ptitle"><b>4</b>인공지능의 판단</div>
     <div class="flowline"><span>문장</span><i>→</i><span>토큰</span><i>→</i><span>임베딩</span><i>→</i><span>위치 관계 계산</span><i>→</i><span>의미 파악</span></div>
     <p class="fact">인공지능은 <b>수치화된 단어들의 위치 관계</b>를 계산하여 <b>문장의 의미적 구조</b>를 파악합니다.</p>
     <div class="judge" id="txtJudge"></div>
@@ -393,10 +429,30 @@ canvas.sq{aspect-ratio:1/1;max-width:520px;border-radius:12px;cursor:pointer;tou
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>2</b>인공지능의 판단</div>
+    <div class="ptitle"><b>2</b>기온에 따른 아이스크림 판매량</div>
+    <p class="pdesc">기온과 아이스크림 판매량을 점으로 나타냅니다. 인공지능은 점들 사이를 가장 잘 지나가는 <b>직선(규칙)</b>을 찾아, 처음 보는 기온의 판매량도 예측합니다.</p>
+    <div class="grid2">
+      <canvas id="iceChart" style="height:320px"></canvas>
+      <div class="stack">
+        <div class="strip"><table><tbody id="iceTable"></tbody></table></div>
+        <div class="predict">
+          <label class="rowsel">내일 기온 <input type="range" id="newT" min="14" max="36" step="1" value="29"> <b class="num" id="newTv"></b></label>
+          <div class="k">예상 판매량</div>
+          <div class="val num" id="newIce"></div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">기온과 판매량은 설명을 위해 만든 예시 데이터입니다. 이렇게 숫자를 예측하는 인공지능 모델을 <b>회귀 모델</b>이라고 합니다.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>3</b>인공지능의 판단</div>
     <div class="flowline"><span>수치 값 입력</span><i>→</i><span>크기 · 차이 · 증가·감소 관계 계산</span><i>→</i><span>패턴 학습</span><i>→</i><span>판단</span></div>
     <p class="fact">인공지능은 <b>수치 값</b>을 입력받아 값의 <b>크기, 차이, 증가·감소 관계</b> 등을 계산하여 <b>패턴</b>을 학습합니다.</p>
+    <h3 class="jhead">① 기온 데이터 간 관계 분석</h3>
     <div class="judge" id="numJudge"></div>
+    <h3 class="jhead">② 기온에 따른 아이스크림 판매량 관계 분석</h3>
+    <div class="judge" id="iceJudge"></div>
   </div>
 </section>
 
@@ -510,8 +566,19 @@ function renderImage(){
   $('#imgJudge').innerHTML = [['B','학생 B'],['C','고양이']].map(([k,nm])=>{ const pct=simPct(CMP.A,CMP[k]), ok=pct>=70;
     return `<div class="jrow"><span class="who">${nm}</span><span class="why">학생 A와 수치 패턴이 <b>${pct}%</b> 비슷함</span><span class="tag ${ok?'same':'diff'}">${ok?'AI 판단: 학생 A와 같은 학생':'AI 판단: 학생 아님'}</span></div>`; }).join('');
 }
+const PAINT = [['검정',[0,0,0]],['흰색',[255,255,255]],['살색',[255,214,170]],['갈색',[120,70,30]],['빨강',[220,30,40]],['주황',[240,150,50]],['초록',[30,110,60]],['하늘',[180,210,240]],['남색',[20,40,110]]];
+img.paint = PAINT[0][1];
 function initImage(){
   buildImageCompare();
+  $('#paintPal').innerHTML = PAINT.map(([nm,c],i)=>`<button class="${i?'':'on'}" data-i="${i}" style="background:rgb(${c})" title="${nm}" aria-label="${nm}"></button>`).join('');
+  $('#paintPal').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; $$('#paintPal button').forEach(x=>x.classList.toggle('on',x===b)); img.paint=PAINT[+b.dataset.i][1]; });
+  let painting=false;
+  const paint=e=>{ const cv=e.target.closest('#imgCmp canvas.th'); if(!cv) return; const k=cv.closest('.ccard').dataset.k, b=cv.getBoundingClientRect();
+    const c=Math.floor((e.clientX-b.left)/b.width*16), r=Math.floor((e.clientY-b.top)/b.height*16); if(r<0||r>15||c<0||c>15) return;
+    const cur=CMP[k][r][c]; if(cur.join()===img.paint.join()) return; CMP[k][r][c]=[...img.paint]; renderImage(); };
+  $('#imgCmp').addEventListener('pointerdown', e=>{ if(e.target.closest('canvas.th')){ painting=true; paint(e); } });
+  $('#imgCmp').addEventListener('pointermove', e=>{ if(painting) paint(e); });
+  window.addEventListener('pointerup', ()=>painting=false);
   segInit($('#imgMode'), v=>{ img.mode=v; renderImage(); });
   $('#imgNums').addEventListener('change', e=>{ img.nums=e.target.checked; renderImage(); });
   const pick=(r,c)=>{ img.sel=[r,c]; renderImage(); };
@@ -780,12 +847,21 @@ function renderTextJudge(){
   $('#txtJudge').innerHTML = [['데이터','알고리즘'],['꿈','철학'],['사과','데이터']].map(([a,b])=>{ const ang=angleOf(a,b), ok=ang<45;
     return `<div class="jrow"><span class="who">${a} · ${b}</span><span class="tag ${ok?'same':'diff'}">${ok?'AI 판단: 의미가 가까운 단어':'AI 판단: 의미가 먼 단어'}</span><span class="why">두 단어 좌표의 화살표 사이 각도 <b>${ang}°</b></span></div>`; }).join('');
 }
-function renderText(){ renderTokens(); renderEmb(); renderTextJudge(); }
+/* 문자 코드: 영어(아스키)는 7자리, 한글 등(유니코드)은 16자리 이진수 */
+function renderCode(){
+  const chars=[...$('#codeIn').value].filter(c=>c.trim());
+  if(!chars.length){ $('#codeTable').innerHTML='<p class="hint">글자를 입력해 봅시다.</p>'; return; }
+  const code=c=>c.codePointAt(0), kind=c=>code(c)<128?'아스키':'유니코드', bin=c=>code(c).toString(2).padStart(code(c)<128?7:16,'0');
+  const row=(nm,f,st)=>`<tr><th>${nm}</th>${chars.map(c=>`<td style="${st||''}">${f(c)}</td>`).join('')}</tr>`;
+  $('#codeTable').innerHTML = `<table><tbody>${row('글자',c=>c,'font:800 18px var(--body)')}${row('코드 종류',kind,'font-size:11px;color:var(--muted)')}${row('문자 코드 번호',code)}${row('이진수',bin,'background:var(--accent-soft);color:var(--accent);font-weight:700')}</tbody></table>`;
+}
+function renderText(){ renderCode(); renderTokens(); renderEmb(); renderTextJudge(); }
 function initText(){
   const ex=['나는 인공지능 수업이 좋다','학생은 급식을 좋아한다','학생은 학교에서 공부한다'];
   $('#txtEx').innerHTML = ex.map(s=>`<button class="btn sm" data-s="${s}">${s}</button>`).join('');
   $('#txtEx').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b){ $('#txtIn').value=b.dataset.s; renderTokens(); } });
   $('#txtIn').addEventListener('input', renderTokens);
+  $('#codeIn').addEventListener('input', renderCode);
   $('#wordBtns').innerHTML = Object.keys(EMB).map(w=>`<button class="btn sm" data-w="${w}">${w}</button>`).join('');
   $('#wordBtns').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) pickWord(b.dataset.w); });
   const cv=$('#embMap');
@@ -826,17 +902,66 @@ function renderNumJudge(){
     ['증가·감소', `일주일 동안 기온이 <b>${up}번 올랐고 ${down}번 내려갔습니다</b>`, `증가 ${up}번 · 감소 ${down}번`],
     ['관계', `비가 온 날(${rain.map(d=>d.d).join('·')})의 평균 기온은 <b>${rT}℃</b>, 비가 안 온 날은 <b>${dT}℃</b>입니다. 기온과 강수량의 관계를 계산하면 비가 온 날 기온이 더 낮습니다`, 'AI 판단: 비가 오면 기온 ▼']
   ];
-  $('#numJudge').innerHTML = rows.map(([who,why,tag])=>`<div class="jrow"><span class="who">${who}</span><span class="tag same">${tag}</span><span class="why">${why}</span></div>`).join('');
+  $('#numJudge').innerHTML = jrows(rows);
+  renderIceJudge();
 }
-function renderNumber(){ renderTemp(); renderNumJudge(); }
+const jrows = rows => rows.map(([who,why,tag])=>`<div class="jrow"><span class="who">${who}</span><span class="tag same">${tag}</span><span class="why">${why}</span></div>`).join('');
+/* 기온(℃)과 아이스크림 판매량(개) 예시 데이터, 최소제곱 직선 */
+const ICE = [[18,42],[20,55],[22,61],[24,74],[26,80],[28,95],[30,102],[32,115]];
+const fit = (()=>{ const n=ICE.length, mx=ICE.reduce((s,p)=>s+p[0],0)/n, my=ICE.reduce((s,p)=>s+p[1],0)/n; let c=0,v=0; for(const [x,y] of ICE){ c+=(x-mx)*(y-my); v+=(x-mx)**2; } const a=c/v; return {a,b:my-a*mx}; })();
+function renderIce(){
+  const t=+$('#newT').value, pred=fit.a*t+fit.b;
+  $('#newTv').textContent=t+'℃'; $('#newIce').textContent=Math.round(pred)+'개';
+  $('#iceTable').innerHTML = `<tr><th>기온(℃)</th>${ICE.map(p=>`<td>${p[0]}</td>`).join('')}</tr><tr><th>판매량(개)</th>${ICE.map(p=>`<td style="background:var(--accent-soft);color:var(--accent);font-weight:700">${p[1]}</td>`).join('')}</tr>`;
+  const F=frame($('#iceChart'),320,{x:[14,36], y:[0,140], xt:[14,18,22,26,30,34], yt:[0,40,80,120], xl:'기온(℃) →', yl:'판매량(개)', pad:{t:30}});
+  const {ctx,X,Y}=F, acc=tok('--accent');
+  ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(X(14),Y(fit.a*14+fit.b)); ctx.lineTo(X(36),Y(fit.a*36+fit.b)); ctx.stroke();
+  ctx.fillStyle=tok('--ink'); for(const [x,y] of ICE){ ctx.beginPath(); ctx.arc(X(x),Y(y),5.5,0,Math.PI*2); ctx.fill(); }
+  ctx.setLineDash([4,4]); ctx.strokeStyle=tok('--muted'); ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(X(t),Y(0)); ctx.lineTo(X(t),Y(pred)); ctx.lineTo(X(14),Y(pred)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=tok('--surface'); ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(X(t),Y(pred),8,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=tok('--ink'); ctx.font=FONT(13,800); ctx.textAlign=t>30?'right':'left'; ctx.textBaseline='bottom'; ctx.fillText(`예상 ${Math.round(pred)}개`, X(t)+(t>30?-12:12), Y(pred)-8);
+}
+function renderIceJudge(){
+  const t=+$('#newT').value, pred=Math.round(fit.a*t+fit.b), lo=ICE[0], hi=ICE[ICE.length-1];
+  const ups=ICE.slice(1).every((p,i)=>p[1]>ICE[i][1]);
+  $('#iceJudge').innerHTML = jrows([
+    ['크기·차이', `가장 더운 ${hi[0]}℃에 <b>${hi[1]}개</b>, 가장 시원한 ${lo[0]}℃에 <b>${lo[1]}개</b>로 <b>${hi[1]-lo[1]}개</b> 차이가 납니다`, `차이 ${hi[1]-lo[1]}개`],
+    ['증가·감소', `기온이 올라갈 때 판매량이 ${ups?'<b>한 번도 빠짐없이 늘어났습니다</b>':'대체로 늘어났습니다'}`, '기온 ▲ → 판매량 ▲'],
+    ['관계', `기온이 <b>1℃</b> 오를 때마다 판매량이 약 <b>${fit.a.toFixed(1)}개</b> 늘어나는 관계입니다`, `1℃당 약 ${fit.a.toFixed(1)}개 증가`],
+    ['예측', `내일 기온이 <b>${t}℃</b>라면 판매량은 약 <b>${pred}개</b>로 예측합니다`, `AI 판단: 약 ${pred}개`]
+  ]);
+}
+function renderNumber(){ renderTemp(); renderIce(); renderNumJudge(); }
 function initNumber(){
-  $('#tempChart').addEventListener('pointerdown', e=>{ const r=e.currentTarget.getBoundingClientRect(); const i=Math.floor((e.clientX-r.left-TPAD.l)/((r.width-TPAD.l-TPAD.r)/7)); if(i>=0&&i<7){ numS.day=i; renderTemp(); } });}
+  $('#tempChart').addEventListener('pointerdown', e=>{ const r=e.currentTarget.getBoundingClientRect(); const i=Math.floor((e.clientX-r.left-TPAD.l)/((r.width-TPAD.l-TPAD.r)/7)); if(i>=0&&i<7){ numS.day=i; renderTemp(); } });
+  $('#newT').addEventListener('input', ()=>{ renderIce(); renderIceJudge(); });
+}
 
 /* ================= router ================= */
-const R = { home:()=>{}, image:renderImage, sound:renderSound, text:renderText, number:renderNumber };
+const R = { home:()=>{}, image:()=>{ renderImage(); drawPixConcept(); }, sound:()=>{ renderSound(); drawVibConcept(); }, text:renderText, number:renderNumber };
 function current(){ const h=location.hash.slice(1); return R[h]?h:'home'; }
 function route(scroll){ const v=current(); for(const k in R) $('#view-'+k).hidden=k!==v; $('#topnav').hidden=v==='home';
   $$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v)); R[v](); if(scroll) window.scrollTo(0,0); }
+function drawPixConcept(){
+  const cv=$('#pixConcept'); if(!cv||!cv.clientWidth) return; const {ctx,w,h}=setupCanvas(cv,150), P=img.A, ink=tok('--ink'), acc=tok('--accent');
+  for(let y=0;y<16;y++) for(let x=0;x<16;x++){ ctx.fillStyle=`rgb(${P[y][x]})`; ctx.fillRect(10+x*2,40+y*2,2,2); }
+  ctx.fillStyle=tok('--muted'); ctx.font=FONT(11,700); ctx.textAlign='center'; ctx.fillText('원래 크기',26,92);
+  ctx.fillStyle=acc; ctx.font=FONT(18,800); ctx.fillText('→',60,62); ctx.font=FONT(11,700); ctx.fillText('확대',60,82);
+  const s=Math.min(130,w-100), c=s/16, x0=w-s-6, y0=6;
+  for(let y=0;y<16;y++) for(let x=0;x<16;x++){ ctx.fillStyle=`rgb(${P[y][x]})`; ctx.fillRect(x0+x*c,y0+y*c,c+0.5,c+0.5); }
+  ctx.strokeStyle='rgba(120,135,160,.4)'; ctx.lineWidth=1; ctx.beginPath(); for(let i=0;i<=16;i++){ ctx.moveTo(x0+i*c,y0); ctx.lineTo(x0+i*c,y0+s); ctx.moveTo(x0,y0+i*c); ctx.lineTo(x0+s,y0+i*c); } ctx.stroke();
+  ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.strokeRect(x0+6*c,y0+5*c,c,c);
+  ctx.fillStyle=ink; ctx.font=FONT(12,800); ctx.textAlign='right'; ctx.fillText('픽셀 1개 ↗', x0+5.6*c, y0+s+2>h-4?h-4:y0+s+14);
+}
+function drawVibConcept(){
+  const cv=$('#vibConcept'); if(!cv||!cv.clientWidth) return; const {ctx,w,h}=setupCanvas(cv,170), acc=tok('--accent'), ink=tok('--ink'), mid=h/2+6, A=46, per=(w-40)/2.5;
+  ctx.strokeStyle=tok('--line'); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(10,mid); ctx.lineTo(w-10,mid); ctx.stroke();
+  ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.beginPath(); for(let x=0;x<=w-40;x++){ const y=mid-A*Math.sin(x/per*2*Math.PI); x?ctx.lineTo(20+x,y):ctx.moveTo(20+x,y); } ctx.stroke();
+  const xa=20+per*0.25; ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(xa,mid); ctx.lineTo(xa,mid-A); ctx.stroke();
+  ctx.fillStyle=ink; ctx.font=FONT(12,800); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText('↕ 진동 크기', xa-8, mid-A-6); ctx.textBaseline='alphabetic';
+  const y1=mid+A+16; ctx.beginPath(); ctx.moveTo(20,y1-5); ctx.lineTo(20,y1); ctx.lineTo(20+per,y1); ctx.lineTo(20+per,y1-5); ctx.stroke();
+  ctx.textAlign='center'; ctx.fillText('진동 1번', 20+per/2, y1+14);
+}
 /* 화살표가 줄 끝에 혼자 남지 않도록 화살표와 다음 칸을 한 덩어리로 묶음 */
 $$('.flowline > i').forEach(i=>{ const n=i.nextElementSibling, g=document.createElement('em'); g.className='fstep'; i.before(g); g.append(i,n); });
 initImage(); initSound(); initText(); initNumber();
