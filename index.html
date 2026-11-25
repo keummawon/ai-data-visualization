@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>숫자로 보는 AI 학습 데이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 첫 화면은 가운데 4개 버튼, 각 화면은 '한 줄 요약 → 2~3단계 활동' 구성. 깔끔한 파란색 계열. */
+:root{
+  --bg:#F4F7FC; --surface:#FFFFFF; --surface2:#EBF1FA; --ink:#14213D; --muted:#5A6A85; --line:#D8E2F1;
+  --accent:#2563EB; --accent-soft:#DFE9FD; --shadow:rgba(20,45,100,.22);
+  --c2:#0EA5E9; --on-c:#FFFFFF; --good:#2563EB; --bad:#D9485F;
+  --ch-r:#D93A3A; --ch-g:#2E9A4A; --ch-b:#2F62D6;
+  --body:"Gothic A1","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0C1424; --surface:#121C31; --surface2:#1A2640; --ink:#E3EBFA; --muted:#93A4C3; --line:#26344F;
+  --accent:#60A5FA; --accent-soft:#1B2E52; --shadow:rgba(0,0,0,.55);
+  --c2:#22D3EE; --on-c:#0C1424; --good:#60A5FA; --bad:#F2788C;
+  --ch-r:#FF6B6B; --ch-g:#5FD07D; --ch-b:#6F97FF; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0C1424; --surface:#121C31; --surface2:#1A2640; --ink:#E3EBFA; --muted:#93A4C3; --line:#26344F;
+  --accent:#60A5FA; --accent-soft:#1B2E52; --shadow:rgba(0,0,0,.55);
+  --c2:#22D3EE; --on-c:#0C1424; --good:#60A5FA; --bad:#F2788C;
+  --ch-r:#FF6B6B; --ch-g:#5FD07D; --ch-b:#6F97FF; color-scheme:dark; }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 var(--body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 64px}
+h1,h2,h3{font-weight:800;letter-spacing:-.01em;text-wrap:balance;margin:0}
+p{margin:0}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- home ---------- */
+#view-home{max-width:900px;margin:0 auto;padding-block:clamp(24px,8vh,80px) 0;text-align:center}
+.hero{display:grid;gap:14px;justify-items:center;margin-bottom:40px}
+.eyebrow{font-size:13px;font-weight:800;color:var(--accent);letter-spacing:.06em;background:var(--accent-soft);padding:5px 12px;border-radius:999px}
+.hero h1{font-size:clamp(32px,5.6vw,52px);line-height:1.15}
+.thesis{font-size:clamp(16px,2.2vw,19px);font-weight:500;color:var(--muted);line-height:1.7}
+.thesis b{color:var(--accent)}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media(max-width:720px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
+.dcard{display:grid;justify-items:center;gap:6px;padding:30px 12px 26px;text-decoration:none;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:20px;transition:transform .15s,box-shadow .15s,border-color .15s}
+.dcard:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 16px 30px -18px var(--shadow)}
+.dcard:hover .ico{background:var(--accent);color:var(--on-c)}
+.ico{display:grid;place-items:center;width:64px;height:64px;border-radius:18px;background:var(--accent-soft);color:var(--accent);margin-bottom:8px;transition:background .15s,color .15s}
+.ico svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dname{font-size:22px;font-weight:800}
+.dhint{font-size:13px;color:var(--muted);font-weight:600}
+.foot{margin-top:28px;color:var(--muted);font-size:13px}
+
+/* ---------- nav ---------- */
+.topnav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding-block:10px;border-bottom:1px solid var(--line)}
+.back{font-weight:700;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px;font-size:14px}
+.back:hover{background:var(--surface2);color:var(--ink)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:6px 16px;border-radius:999px;border:1px solid var(--line);text-decoration:none;color:var(--ink);font-weight:700;font-size:14px;background:var(--surface)}
+.tab.on{background:var(--accent);color:var(--on-c);border-color:var(--accent)}
+a:focus-visible,button:focus-visible,input:focus-visible,canvas:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---------- views ---------- */
+.vhead{padding-block:24px 8px;display:grid;gap:14px}
+.vhead h1{font-size:clamp(28px,4.4vw,40px);line-height:1.2}
+.dlabel{font-weight:800;font-size:14px;color:var(--accent)}
+.flowline{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.flowline span{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;font-weight:700}
+.flowline span:last-child{background:var(--accent);border-color:var(--accent);color:var(--on-c)}
+.flowline i{font-style:normal;color:var(--accent);font-weight:800}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;display:grid;gap:16px;margin-top:18px;min-width:0}
+.ptitle{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;line-height:1.3}
+.ptitle b{flex:none;display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--on-c);font-size:16px}
+.pdesc{color:var(--muted);max-width:68ch}
+.pdesc b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:start}
+.grid2 > *{min-width:0}
+@media(max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.stack{display:grid;gap:14px;min-width:0}
+.controls{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.seg button{font:inherit;font-size:15px;font-weight:700;border:0;background:transparent;color:var(--muted);padding:7px 16px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--on-c)}
+.btn{font:inherit;font-size:15px;font-weight:700;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 16px;border-radius:12px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-c)}
+.btn.sm{padding:5px 12px;font-size:14px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:600;cursor:pointer}
+.chk input{accent-color:var(--accent);width:17px;height:17px}
+canvas{display:block;width:100%}
+.k{font-size:14px;font-weight:800;color:var(--muted)}
+.hint{font-size:14px;color:var(--muted)}
+.fact{background:var(--accent-soft);border-radius:14px;padding:14px 16px;font-size:16px;line-height:1.75}
+.fact b{color:var(--accent)}
+
+/* number strips */
+.strip{overflow-x:auto;max-width:100%;padding-bottom:4px}
+.strip table{border-collapse:separate;border-spacing:3px;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.strip th{font:700 13px var(--body);color:var(--muted);text-align:right;padding:0 6px 0 0;white-space:nowrap;position:sticky;left:0;background:var(--surface);z-index:1}
+.strip td{min-width:38px;height:32px;text-align:center;border-radius:6px;padding:0 3px;white-space:nowrap}
+.strip td.idx{height:18px;color:var(--muted);font-size:11px;background:transparent}
+.ccard .strip td{min-width:30px;height:28px;font-size:12px}
+
+/* image */
+canvas.sq{aspect-ratio:1/1;max-width:440px;border-radius:12px;cursor:pointer;touch-action:none;border:1px solid var(--line)}
+.pxhead{display:flex;align-items:center;gap:14px}
+.swatch{width:72px;height:72px;border-radius:16px;border:1px solid var(--line);flex:none}
+.pxpos{font-size:24px;font-weight:800;line-height:1.25}
+.sliders{display:grid;gap:12px}
+.sl{display:grid;grid-template-columns:62px minmax(0,1fr) 54px;align-items:center;gap:10px;font-weight:800;font-size:15px}
+.sl span{color:var(--sc,var(--ink))}
+.sl input[type=range]{width:100%;accent-color:var(--sc,var(--accent))}
+.sl output{font:600 18px var(--mono);text-align:right}
+
+/* compare cards */
+.cmpgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:900px){.cmpgrid{grid-template-columns:minmax(0,1fr)}}
+.ccard{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px;align-content:start;min-width:0}
+.ccard header{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ccard h3{font-size:20px}
+.ccard header .btn{margin-left:auto}
+.ccard .th{width:130px;aspect-ratio:1/1;border-radius:10px;border:1px solid var(--line);justify-self:center}
+.tag{font-size:13px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--surface2);color:var(--muted)}
+.tag:empty{display:none}
+.tag.same{background:var(--accent-soft);color:var(--good)}
+.tag.diff{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.meter{display:grid;gap:6px}
+.mrow{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;font-weight:700}
+.mrow b{font-size:24px;color:var(--accent)}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.stat{font-size:15px;line-height:1.6}
+.stat b{color:var(--accent)}
+
+/* text */
+.tin{font:700 19px var(--body);color:var(--ink);background:var(--surface2);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;width:100%;max-width:520px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font:700 18px var(--body);padding:6px 14px;border-radius:10px;background:var(--accent-soft);border:1.5px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+.chip.part{background:var(--surface2);border-color:var(--line);color:var(--muted)}
+.chip.id{font:600 16px var(--mono);background:var(--surface);border-color:var(--accent);color:var(--accent)}
+.flow{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 16px;align-items:center}
+@media(max-width:560px){.flow{grid-template-columns:minmax(0,1fr)}}
+.wordbtns{display:flex;flex-wrap:wrap;gap:6px}
+.wordbtns .btn.a{background:var(--accent);border-color:var(--accent);color:var(--on-c)}
+.wordbtns .btn.b{background:var(--c2);border-color:var(--c2);color:var(--on-c)}
+.coord{display:grid;gap:6px;font:600 17px var(--mono)}
+.coord .a{color:var(--accent)} .coord .b{color:var(--c2)}
+.angle{font-size:44px;font-weight:800;line-height:1;color:var(--accent)}
+
+/* number */
+.predict{display:grid;gap:12px;background:var(--surface2);border-radius:16px;padding:18px}
+.predict .val{font-size:48px;font-weight:800;line-height:1;color:var(--accent)}
+.rowsel{display:flex;align-items:center;gap:12px;font-weight:700;flex-wrap:wrap}
+.rowsel input{flex:1 1 180px;accent-color:var(--accent)}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav id="topnav" class="topnav" hidden>
+  <a href="#home" class="back">← 처음 화면</a>
+  <div class="tabs">
+    <a class="tab" data-v="image" href="#image">이미지</a>
+    <a class="tab" data-v="sound" href="#sound">소리</a>
+    <a class="tab" data-v="text" href="#text">텍스트</a>
+    <a class="tab" data-v="number" href="#number">수치</a>
+  </div>
+</nav>
+
+<!-- ================= HOME ================= -->
+<section id="view-home">
+  <header class="hero">
+    <p class="eyebrow">인공지능 학습 데이터의 다양한 형태</p>
+    <h1>숫자로 보는 AI 학습 데이터</h1>
+    <p class="thesis">인공지능은 모든 데이터를 <b>숫자</b>로 바꿔서 패턴을 학습해요.<br>살펴볼 데이터를 골라 보세요.</p>
+  </header>
+  <nav class="cards" aria-label="데이터 종류">
+    <a class="dcard" href="#image">
+      <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M4 18l5.5-5 4 3.5L16.5 14 20 17"/></svg></span>
+      <span class="dname">이미지</span><span class="dhint">픽셀 → 숫자</span>
+    </a>
+    <a class="dcard" href="#sound">
+      <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2M7 8v8M11 4v16M15 7v10M19 10v4"/></svg></span>
+      <span class="dname">소리</span><span class="dhint">떨림 → 숫자</span>
+    </a>
+    <a class="dcard" href="#text">
+      <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6V4h16v2M12 4v16M9 20h6"/></svg></span>
+      <span class="dname">텍스트</span><span class="dhint">단어 → 좌표</span>
+    </a>
+    <a class="dcard" href="#number">
+      <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M7 16v-4M12 16V7M17 16v-7"/></svg></span>
+      <span class="dname">수치</span><span class="dhint">크기 · 차이 · 변화</span>
+    </a>
+  </nav>
+  <p class="foot">수업 활동용 시각화 자료예요. 그림, 소리, 표의 값은 원리를 보여 주기 위해 만든 예시예요.</p>
+</section>
+
+<!-- ================= IMAGE ================= -->
+<section id="view-image" hidden>
+  <header class="vhead">
+    <span class="dlabel">이미지 데이터</span>
+    <h1>그림은 숫자가 적힌 작은 칸들이에요</h1>
+    <div class="flowline"><span>그림</span><i>→</i><span>작은 칸(픽셀)으로 나누기</span><i>→</i><span>칸마다 색깔 숫자</span></div>
+  </header>
+
+  <div class="panel">
+    <div class="ptitle"><b>1</b>그림의 칸을 눌러 보세요</div>
+    <div class="grid2">
+      <div class="stack">
+        <canvas id="imgMain" class="sq" tabindex="0" aria-label="학생 그림. 칸을 누르거나 방향키로 픽셀을 고르세요."></canvas>
+        <div class="controls">
+          <div class="seg" id="imgMode"><button data-v="color" class="on">컬러</button><button data-v="gray">흑백</button></div>
+          <label class="chk"><input type="checkbox" id="imgNums"> 칸에 숫자 보기</label>
+          <button class="btn sm" id="imgReset">처음 그림으로</button>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="pxhead">
+          <div class="swatch" id="pxSw"></div>
+          <div><div class="k">내가 고른 칸</div><div class="pxpos" id="pxPos"></div></div>
+        </div>
+        <div id="rgbBox" class="sliders">
+          <label class="sl" style="--sc:var(--ch-r)"><span>빨강 R</span><input type="range" id="sR" min="0" max="255"><output id="oR" class="num"></output></label>
+          <label class="sl" style="--sc:var(--ch-g)"><span>초록 G</span><input type="range" id="sG" min="0" max="255"><output id="oG" class="num"></output></label>
+          <label class="sl" style="--sc:var(--ch-b)"><span>파랑 B</span><input type="range" id="sB" min="0" max="255"><output id="oB" class="num"></output></label>
+          <p class="hint">빨강·초록·파랑 빛을 0~255 숫자만큼 섞어서 색 하나를 만들어요. 슬라이더를 움직여 보세요.</p>
+        </div>
+        <div id="grayBox" class="sliders" hidden>
+          <label class="sl"><span>밝기</span><input type="range" id="sY" min="0" max="255"><output id="oY" class="num"></output></label>
+          <p class="hint">0은 가장 어두운 검정, 255는 가장 밝은 흰색이에요.</p>
+        </div>
+        <div class="fact" id="imgFact"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>2</b>숫자가 비슷하면 그림도 비슷해요</div>
+    <p class="pdesc">AI는 두 그림에서 <b>같은 자리</b>의 숫자를 비교해요. 파란 테두리로 표시한 <b>눈이 있는 줄</b>의 밝기 숫자를 견주어 보세요.</p>
+    <div class="cmpgrid" id="imgCmp"></div>
+  </div>
+</section>
+
+<!-- ================= SOUND ================= -->
+<section id="view-sound" hidden>
+  <header class="vhead">
+    <span class="dlabel">소리 데이터</span>
+    <h1>목소리는 떨림을 잰 숫자들이에요</h1>
+    <div class="flowline"><span>목소리</span><i>→</i><span>아주 짧은 간격으로 떨림 재기</span><i>→</i><span>떨림 크기 숫자</span></div>
+  </header>
+
+  <div class="panel">
+    <div class="ptitle"><b>1</b>"안녕하세요"를 듣고 모양을 보세요</div>
+    <div class="controls">
+      <div class="seg" id="sndPick"><button data-v="girl" class="on">여학생</button><button data-v="boy">남학생</button></div>
+      <button class="btn primary" id="sndPlay">▶ 소리 듣기</button>
+    </div>
+    <canvas id="sndFull" style="height:170px;touch-action:none;cursor:ew-resize"></canvas>
+    <p class="hint">위아래로 크게 흔들릴수록 큰 소리예요. 파란 상자를 끌어서 확대할 곳을 골라 보세요.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>2</b>확대하면 숫자가 보여요</div>
+    <p class="pdesc">파란 상자 안의 <b>0.01초</b>를 크게 키웠어요. 점 하나가 <b>한 번 잰 떨림 크기</b>예요. 위로 가면 +, 아래로 가면 − 숫자가 돼요.</p>
+    <canvas id="sndZoom" style="height:210px"></canvas>
+    <div class="strip" id="sndStrip"></div>
+    <p class="fact">0.01초 동안 <b>20번</b> 재서 숫자 <b>20개</b>가 생겼어요. 1초면 숫자가 <b>2,000개</b>! 실제 녹음은 1초에 수만 번 재요.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>3</b>목소리마다 숫자 패턴이 달라요</div>
+    <p class="pdesc">같은 "안녕하세요"라도 <b>높은 목소리</b>는 빠르게, <b>낮은 목소리</b>는 천천히 떨려요. 여학생 소리와 비교해 보세요.</p>
+    <div class="cmpgrid" id="sndCmp"></div>
+    <p class="hint">여기 목소리는 수업용으로 컴퓨터가 만든 소리 모형이에요.</p>
+  </div>
+</section>
+
+<!-- ================= TEXT ================= -->
+<section id="view-text" hidden>
+  <header class="vhead">
+    <span class="dlabel">텍스트 데이터</span>
+    <h1>단어는 번호와 좌표로 바뀌어요</h1>
+    <div class="flowline"><span>문장</span><i>→</i><span>조각(토큰)으로 나누고 번호 붙이기</span><i>→</i><span>단어마다 좌표 (임베딩)</span></div>
+  </header>
+
+  <div class="panel">
+    <div class="ptitle"><b>1</b>문장을 조각으로 나눠 보세요</div>
+    <input id="txtIn" class="tin" value="나는 인공지능 수업이 좋아요" maxlength="30" aria-label="문장 입력">
+    <div class="wordbtns" id="txtEx"></div>
+    <div class="flow">
+      <span class="k">조각 (토큰)</span><div class="chips" id="txtTok"></div>
+      <span class="k">번호</span><div class="chips" id="txtIds"></div>
+    </div>
+    <p class="hint">컴퓨터는 글자 대신 이 번호로 문장을 기억해요. 사전에 없는 글자는 1번(모르는 조각)이 돼요.</p>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>2</b>단어를 좌표로 나타내요 (임베딩)</div>
+    <p class="pdesc">단어마다 <b>[가로, 세로]</b> 숫자를 붙여 지도 위 화살표로 나타내요. 이것을 <b>임베딩</b>이라고 해요. 화살표 방향이 비슷하면 뜻도 비슷해요. 단어 두 개를 골라 보세요.</p>
+    <div class="grid2">
+      <div class="stack">
+        <div class="wordbtns" id="wordBtns"></div>
+        <div class="coord" id="coord"></div>
+        <div class="k">두 화살표 사이의 각도</div>
+        <div class="angle num" id="angle"></div>
+        <div class="stat" id="angleTxt"></div>
+      </div>
+      <canvas id="embMap" style="height:380px;cursor:pointer"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NUMBER ================= -->
+<section id="view-number" hidden>
+  <header class="vhead">
+    <span class="dlabel">수치 데이터</span>
+    <h1>크기와 양은 숫자 그대로가 데이터예요</h1>
+    <div class="flowline"><span>기온 · 강수량 · 점수 · 키</span><i>→</i><span>숫자 그대로 입력</span><i>→</i><span>크기 · 차이 · 증가와 감소 계산</span></div>
+  </header>
+
+  <div class="panel">
+    <div class="ptitle"><b>1</b>일주일 기온에서 크기·차이·변화 찾기</div>
+    <div class="grid2">
+      <canvas id="tempChart" style="height:300px;cursor:pointer"></canvas>
+      <div class="stack">
+        <div class="k">고른 날</div>
+        <div class="pxpos" id="dayName"></div>
+        <div class="fact" id="dayFact"></div>
+        <p class="hint">막대를 눌러 보세요. 하루 기록은 [기온, 강수량]처럼 숫자 묶음 하나로 AI에게 들어가요.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><b>2</b>관계를 찾아 예측해요</div>
+    <p class="pdesc">기온이 올라가면 아이스크림이 더 많이 팔릴까요? AI는 점들 사이를 가장 잘 지나가는 <b>직선(규칙)</b>을 찾아서 처음 보는 날도 예측해요.</p>
+    <div class="grid2">
+      <canvas id="iceChart" style="height:320px"></canvas>
+      <div class="predict">
+        <div class="k">AI가 찾은 규칙</div>
+        <div class="stat" id="iceRule"></div>
+        <label class="rowsel">내일 기온 <input type="range" id="newT" min="14" max="36" step="1" value="29"> <b class="num" id="newTv"></b></label>
+        <div class="k">예상 판매량</div>
+        <div class="val num" id="newIce"></div>
+      </div>
+    </div>
+    <p class="hint">기온과 판매량은 설명을 위해 만든 예시 데이터예요.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+/* ================= helpers ================= */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function setupCanvas(cv, h){
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 300, hh = h || cv.clientHeight || 150;
+  cv.width = Math.round(w*dpr); cv.height = Math.round(hh*dpr);
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,hh);
+  return {ctx, w, h:hh};
+}
+function segInit(el, fn){ el.addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; $$('button',el).forEach(x=>x.classList.toggle('on',x===b)); fn(b.dataset.v); }); }
+const FONT = (s,wt=500) => `${wt} ${s}px "Gothic A1","Malgun Gothic",sans-serif`;
+const MONO = s => `${s}px "JetBrains Mono",Consolas,monospace`;
+function pearson(a,b){ const n=a.length, ma=a.reduce((s,v)=>s+v,0)/n, mb=b.reduce((s,v)=>s+v,0)/n; let s=0,ea=0,eb=0; for(let i=0;i<n;i++){ s+=(a[i]-ma)*(b[i]-mb); ea+=(a[i]-ma)**2; eb+=(b[i]-mb)**2; } return s/Math.sqrt(ea*eb+1e-12); }
+function frame(cv, h, o){
+  const {ctx,w} = setupCanvas(cv, h);
+  const pad = Object.assign({l:46,r:14,t:16,b:34}, o.pad||{});
+  const X = v => pad.l + (v-o.x[0])/(o.x[1]-o.x[0])*(w-pad.l-pad.r);
+  const Y = v => h-pad.b - (v-o.y[0])/(o.y[1]-o.y[0])*(h-pad.t-pad.b);
+  ctx.strokeStyle = tok('--line'); ctx.fillStyle = tok('--muted'); ctx.lineWidth = 1; ctx.font = MONO(11);
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(const v of o.yt||[]){ ctx.beginPath(); ctx.moveTo(pad.l, Y(v)); ctx.lineTo(w-pad.r, Y(v)); ctx.stroke(); ctx.fillText(v, pad.l-6, Y(v)); }
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(const v of o.xt||[]) ctx.fillText(v, X(v), h-pad.b+6);
+  ctx.font = FONT(12,700);
+  if(o.xl){ ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(o.xl, w-pad.r, h-pad.b-4); }
+  if(o.yl){ ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(o.yl, pad.l+4, pad.t-14); }
+  return {ctx, w, h, X, Y, pad};
+}
+const fgFor = g => g>140 ? '#14213D' : '#FFFFFF';
+
+/* ================= IMAGE ================= */
+const PAL = {
+  '.':[234,242,246], k:[38,32,30], h:[86,56,38], s:[248,208,172], e:[28,28,34], g:[72,72,84],
+  m:[212,84,84], c:[244,158,146], w:[250,250,250], n:[38,58,118], r:[204,40,52], o:[236,148,58], p:[242,150,170]
+};
+const ART = {
+  A:["................",".....kkkkkk.....","....kkkkkkkk....","...kkkkkkkkkk...","...kksssssskk...","...kssssssssk...","...ksessssesk...","...kcssssssck...","....sssmmsss....",".....ssssss.....","......ssss......","....nnwrrwnn....","...nnnwrrwnnn...","..nnnnnrrnnnnn..","..nnnnnrrnnnnn..","..nnnnnnnnnnnn.."],
+  B:["................",".....hhhhhh.....","....hhhhhhhh....","...hhhhhhhhhh...","...hhsssssshh...","...hssssssssh...","...hgegssgegh...","...hcssssssch...","...hsssmmsssh...","...hhsssssshh...","...hh.ssss.hh...","...hnnwrrwnnh...","...nnnwrrwnnn...","..nnnnnrrnnnnn..","..nnnnnrrnnnnn..","..nnnnnnnnnnnn.."],
+  C:["................","..o.........o...","..oo.......oo...","..opo.....opo...","..ooooooooooo...",".ooooooooooooo..",".ooeeooooooeeoo.",".ooeeooooooeeoo.",".oooooowwoooooo.",".ooowwwppwwwooo.","..oowwwwwwwwoo..","...oowwmmwwoo...","....oooooooo....","................","................","................"]
+};
+const toPix = rows => rows.map(r=>[...r].map(ch=>[...PAL[ch]]));
+const grayOf = p => Math.round(0.299*p[0] + 0.587*p[1] + 0.114*p[2]);
+const EYE_ROW = 6;
+const img = { A:toPix(ART.A), B:toPix(ART.B), C:toPix(ART.C), mode:'color', nums:false, sel:[6,5] };
+
+function drawPix(cv, pix, o={}){
+  const {ctx, w} = setupCanvas(cv, cv.clientWidth); const c=w/16, gray=o.mode==='gray';
+  for(let y=0;y<16;y++) for(let x=0;x<16;x++){ const p=pix[y][x], g=grayOf(p);
+    ctx.fillStyle = gray ? `rgb(${g},${g},${g})` : `rgb(${p})`; ctx.fillRect(x*c, y*c, c+0.6, c+0.6); }
+  if(o.grid){ ctx.strokeStyle='rgba(120,135,160,.35)'; ctx.lineWidth=1; ctx.beginPath();
+    for(let i=1;i<16;i++){ ctx.moveTo(i*c,0); ctx.lineTo(i*c,w); ctx.moveTo(0,i*c); ctx.lineTo(w,i*c); } ctx.stroke(); }
+  if(o.nums){ ctx.font=`600 ${Math.max(6.5,c*0.36)}px "JetBrains Mono",Consolas,monospace`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    for(let y=0;y<16;y++) for(let x=0;x<16;x++){ const g=grayOf(pix[y][x]); ctx.fillStyle=g>140?'rgba(0,0,0,.8)':'rgba(255,255,255,.92)'; ctx.fillText(g, x*c+c/2, y*c+c/2+0.5); } }
+  if(o.row!=null){ ctx.strokeStyle=tok('--accent'); ctx.lineWidth=Math.max(2.5,c*0.16); ctx.strokeRect(1.5, o.row*c, w-3, c); }
+  if(o.sel){ const [r,cc]=o.sel; ctx.lineWidth=3.5; ctx.strokeStyle=tok('--accent'); ctx.strokeRect(cc*c+1.5, r*c+1.5, c-3, c-3); }
+}
+function buildImageCompare(){
+  const names={A:'학생 A',B:'학생 B',C:'고양이'};
+  $('#imgCmp').innerHTML = ['A','B','C'].map(k=>`
+    <article class="ccard" data-k="${k}">
+      <header><h3>${names[k]}</h3><span class="tag${k==='A'?'':' verdict'}">${k==='A'?'기준 그림':''}</span></header>
+      <canvas class="th"></canvas>
+      <div class="k">눈이 있는 줄의 밝기 숫자</div>
+      <div class="strip"></div>
+      ${k==='A'?'<p class="hint">1번에서 바꾼 색도 여기에 반영돼요.</p>':'<div class="meter"><div class="mrow"><span>학생 A와 닮은 정도</span><b class="num pct"></b></div><div class="bar"><i></i></div></div>'}
+    </article>`).join('');
+}
+function simPct(a,b){ let same=0; for(let y=0;y<16;y++) for(let x=0;x<16;x++) if(Math.abs(grayOf(a[y][x])-grayOf(b[y][x]))<=40) same++; return Math.round(same/256*100); }
+function renderImage(){
+  const pix=img.A, [r,c]=img.sel, p=pix[r][c], g=grayOf(p), gray=img.mode==='gray';
+  drawPix($('#imgMain'), pix, {mode:img.mode, grid:true, nums:img.nums, sel:img.sel});
+  $('#pxPos').textContent = `${r+1}번째 줄, ${c+1}번째 칸`;
+  $('#pxSw').style.background = gray ? `rgb(${g},${g},${g})` : `rgb(${p})`;
+  ['R','G','B'].forEach((k,i)=>{ $('#s'+k).value=p[i]; $('#o'+k).textContent=p[i]; });
+  $('#sY').value=g; $('#oY').textContent=g;
+  $('#rgbBox').hidden=gray; $('#grayBox').hidden=!gray;
+  $('#imgFact').innerHTML = gray
+    ? `이 그림은 16 × 16 = <b>256칸</b>이에요.<br>흑백은 칸마다 밝기 숫자 1개 → 숫자 <b>256개</b> (가로·세로로 된 2차원 표)`
+    : `이 그림은 16 × 16 = <b>256칸</b>이에요.<br>컬러는 칸마다 숫자 3개(R·G·B) → 숫자 <b>768개</b> (표 3장을 쌓은 3차원)`;
+  const cols=[3,4,5,6,7,8,9,10,11,12];
+  $$('#imgCmp .ccard').forEach(card=>{
+    const k=card.dataset.k, P=img[k];
+    drawPix($('.th',card), P, {mode:img.mode, row:EYE_ROW});
+    const cell = q => { const v=grayOf(q); return `<td style="background:rgb(${v},${v},${v});color:${fgFor(v)}">${v}</td>`; };
+    $('.strip',card).innerHTML = `<table><tbody><tr>${cols.map(i=>cell(P[EYE_ROW][i])).join('')}</tr></tbody></table>`;
+    if(k==='A') return;
+    const pct=simPct(img.A, P);
+    $('.pct',card).textContent=pct+'%'; $('.bar i',card).style.width=pct+'%';
+    const v=$('.verdict',card); v.textContent = pct>=70?'비슷해요':'달라요'; v.className='tag verdict '+(pct>=70?'same':'diff');
+  });
+}
+function initImage(){
+  buildImageCompare();
+  segInit($('#imgMode'), v=>{ img.mode=v; renderImage(); });
+  $('#imgNums').addEventListener('change', e=>{ img.nums=e.target.checked; renderImage(); });
+  $('#imgReset').addEventListener('click', ()=>{ img.A=toPix(ART.A); renderImage(); });
+  const pick=(r,c)=>{ img.sel=[r,c]; renderImage(); };
+  $('#imgMain').addEventListener('pointerdown', e=>{ const b=e.currentTarget.getBoundingClientRect();
+    const c=Math.floor((e.clientX-b.left)/b.width*16), r=Math.floor((e.clientY-b.top)/b.height*16); if(r>=0&&r<16&&c>=0&&c<16) pick(r,c); });
+  $('#imgMain').addEventListener('keydown', e=>{ const d={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[e.key]; if(!d) return; e.preventDefault(); pick(clamp(img.sel[0]+d[0],0,15), clamp(img.sel[1]+d[1],0,15)); });
+  ['R','G','B'].forEach((k,i)=>$('#s'+k).addEventListener('input', e=>{ const [r,c]=img.sel; img.A[r][c][i]=+e.target.value; renderImage(); }));
+  $('#sY').addEventListener('input', e=>{ const [r,c]=img.sel, v=+e.target.value; img.A[r][c]=[v,v,v]; renderImage(); });
+}
+
+/* ================= SOUND ================= */
+const SR = 16000, ZOOM = 0.01, STEP = 8;
+const KF = {
+  va:[[0,0],[0.05,0],[0.09,1],[0.20,1],[0.24,0.5],[0.33,0.45],[0.37,1],[0.47,0.95],[0.52,0.5],[0.57,0.3],[0.59,0],[0.63,0],[0.66,0.9],[0.76,0.8],[0.79,0],[0.86,0],[0.89,0.85],[0.97,0.8],[1.00,0.55],[1.04,0.95],[1.16,0.75],[1.27,0]],
+  hn:[[0,0],[0.58,0],[0.60,0.5],[0.64,0.45],[0.67,0]],
+  sn:[[0,0],[0.78,0],[0.80,0.4],[0.86,0.4],[0.88,0]],
+  nasal:[[0,0],[0.20,0],[0.24,1],[0.34,1],[0.37,0],[0.48,0],[0.52,1],[0.57,1],[0.59,0]],
+  F1:[[0,750],[0.20,750],[0.24,300],[0.34,300],[0.37,320],[0.46,580],[0.52,560],[0.62,700],[0.66,760],[0.77,740],[0.88,480],[0.97,480],[1.02,300],[1.12,430],[1.3,430]],
+  F2:[[0,1250],[0.20,1250],[0.24,1150],[0.34,1200],[0.37,2100],[0.46,1050],[0.52,1000],[0.62,1250],[0.77,1250],[0.88,1850],[0.97,1850],[1.02,2100],[1.12,850],[1.3,800]],
+  f0:[[0,1.0],[0.15,1.02],[0.40,1.1],[0.55,1.05],[0.75,0.95],[0.97,0.9],[1.08,1.04],[1.27,0.88]]
+};
+const SYL = [[0.14,'안'],[0.42,'녕'],[0.69,'하'],[0.91,'세'],[1.13,'요']];
+const VOICES = {
+  girl:{name:'여학생', f0:225, fs:1.17, ts:0.96, seed:7},
+  girl2:{name:'다른 여학생', f0:238, fs:1.21, ts:1.04, seed:19},
+  boy:{name:'남학생', f0:118, fs:1.0, ts:1.06, seed:31}
+};
+function interp(kf,t){ if(t<=kf[0][0]) return kf[0][1]; for(let i=1;i<kf.length;i++){ if(t<=kf[i][0]){ const [t0,v0]=kf[i-1],[t1,v1]=kf[i]; return v0+(v1-v0)*(t-t0)/(t1-t0); } } return kf[kf.length-1][1]; }
+function rng(seed){ let s=seed>>>0; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+const res = (f,F,B) => 1/(1+((f-F)/B)**2);
+function synth({f0,fs,ts,seed}){
+  const N=Math.floor(1.30*ts*SR), out=new Float32Array(N), rnd=rng(seed), amps=new Float32Array(64);
+  let ph=0, F0=f0, K=0, jit=0, lp=0, prev=0;
+  for(let i=0;i<N;i++){
+    const t=i/SR/ts;
+    if((i&31)===0){
+      jit=jit*0.85+(rnd()-0.5)*0.012; F0=f0*interp(KF.f0,t)*(1+jit);
+      const F1=interp(KF.F1,t)*fs, F2=interp(KF.F2,t)*fs, F3=2700*fs, na=interp(KF.nasal,t);
+      K=Math.min(64,Math.floor(4000/F0));
+      for(let k=1;k<=K;k++){ const f=k*F0;
+        const oral=res(f,F1,80+F1*0.06)+0.7*res(f,F2,100+F2*0.05)+0.35*res(f,F3,200);
+        const nas=res(f,260*fs,70)+0.15*res(f,2300*fs,250);
+        amps[k-1]=((1-na)*oral+na*nas*0.8)/Math.sqrt(k); }
+    }
+    ph+=2*Math.PI*F0/SR; if(ph>2*Math.PI) ph-=2*Math.PI;
+    let v=0; for(let k=1;k<=K;k++) v+=amps[k-1]*Math.sin(k*ph);
+    const va=interp(KF.va,t), n=rnd()*2-1; lp=lp*0.7+n*0.3; const hp=n-prev; prev=n;
+    out[i]=v*va+interp(KF.hn,t)*lp*2.5+interp(KF.sn,t)*hp+n*0.02*va;
+  }
+  let pk=0; for(let i=0;i<N;i++) pk=Math.max(pk,Math.abs(out[i]));
+  for(let i=0;i<N;i++) out[i]=out[i]/pk*0.9;
+  return out;
+}
+const snd = { cache:{}, feat:{}, cur:'girl', win:0.10*0.96, actx:null, play:null };
+const voice = k => snd.cache[k] || (snd.cache[k]=synth(VOICES[k]));
+function estPitch(x,t0,t1){
+  const a=Math.floor(t0*SR), b=Math.min(x.length,Math.floor(t1*SR)), lo=Math.floor(SR/450), hi=Math.floor(SR/70), rs=[]; let best=0;
+  for(let lag=lo;lag<=hi;lag++){ let s=0,e1=0,e2=0; for(let i=a;i<b-lag;i++){ s+=x[i]*x[i+lag]; e1+=x[i]*x[i]; e2+=x[i+lag]*x[i+lag]; } const r=s/Math.sqrt(e1*e2+1e-12); rs.push(r); if(r>best) best=r; }
+  for(let i=1;i<rs.length-1;i++) if(rs[i]>0.9*best && rs[i]>=rs[i-1] && rs[i]>=rs[i+1]) return SR/(i+lo);
+  return 0;
+}
+function envelope(x,bins){ const out=[],L=x.length; for(let b=0;b<bins;b++){ const a=Math.floor(b*L/bins), e=Math.floor((b+1)*L/bins); let s=0; for(let i=a;i<e;i++) s+=x[i]*x[i]; out.push(Math.sqrt(s/Math.max(1,e-a))); } return out; }
+function feat(k){ if(!snd.feat[k]){ const x=voice(k), ts=VOICES[k].ts; snd.feat[k]={pitch:estPitch(x,0.09*ts,0.19*ts), env:envelope(x,13)}; } return snd.feat[k]; }
+
+function drawWave(cv, x, o={}){
+  const h=o.h; const {ctx,w}=setupCanvas(cv,h);
+  const lab=o.labels?24:0, H=h-lab, mid=H/2, T=x.length/SR, col=tok('--accent');
+  if(o.win!=null){ const x0=o.win/T*w, ww=Math.max(6,ZOOM/T*w); ctx.fillStyle=tok('--accent-soft'); ctx.fillRect(x0-2,0,ww+4,H); ctx.strokeStyle=col; ctx.lineWidth=2; ctx.strokeRect(x0-2,1,ww+4,H-2); }
+  ctx.strokeStyle=tok('--line'); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,mid); ctx.lineTo(w,mid); ctx.stroke();
+  ctx.strokeStyle=col; ctx.beginPath(); const per=x.length/w;
+  for(let px=0;px<w;px++){ let mn=1,mx=-1; const a=Math.floor(px*per), b=Math.max(a+1,Math.floor((px+1)*per)); for(let i=a;i<b&&i<x.length;i++){ if(x[i]<mn) mn=x[i]; if(x[i]>mx) mx=x[i]; }
+    ctx.moveTo(px+0.5, mid-mx*mid*0.95); ctx.lineTo(px+0.5, mid-mn*mid*0.95+0.5); }
+  ctx.stroke();
+  if(o.labels){ ctx.font=FONT(15,800); ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle=tok('--ink');
+    for(const [t,s] of SYL) ctx.fillText(s, t*o.ts/T*w, H+4); }
+  if(o.playT!=null){ ctx.strokeStyle=tok('--ink'); ctx.lineWidth=2; const px=o.playT/T*w; ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,H); ctx.stroke(); }
+}
+function renderSoundZoom(){
+  const x=voice(snd.cur), s0=Math.floor(snd.win*SR), s1=s0+Math.floor(ZOOM*SR), idx=[];
+  for(let i=s0;i<s1;i+=STEP) idx.push(i);
+  const F=frame($('#sndZoom'),210,{x:[0,ZOOM], y:[-100,100], yt:[-100,0,100], pad:{l:44,b:28,t:14}});
+  const {ctx,X,Y,h}=F, c1=tok('--accent'), c2=tok('--c2');
+  ctx.fillStyle=tok('--muted'); ctx.font=FONT(12,700); ctx.textBaseline='top'; ctx.textAlign='left'; ctx.fillText('0초', X(0), h-22); ctx.textAlign='right'; ctx.fillText('0.01초', X(ZOOM), h-22);
+  ctx.strokeStyle=tok('--ink'); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(ZOOM),Y(0)); ctx.stroke();
+  ctx.globalAlpha=0.3; ctx.strokeStyle=c1; ctx.lineWidth=1.5; ctx.beginPath();
+  for(let i=s0;i<s1;i++){ const xx=X((i-s0)/SR), yy=Y(x[i]*100); i===s0?ctx.moveTo(xx,yy):ctx.lineTo(xx,yy); } ctx.stroke(); ctx.globalAlpha=1;
+  idx.forEach(i=>{ const v=x[i]*100, xx=X((i-s0)/SR), yy=Y(v), c=v>=0?c1:c2;
+    ctx.strokeStyle=c; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(xx,Y(0)); ctx.lineTo(xx,yy); ctx.stroke();
+    ctx.fillStyle=c; ctx.beginPath(); ctx.arc(xx,yy,4.5,0,Math.PI*2); ctx.fill(); });
+  const cells = idx.map(i=>{ const v=Math.round(x[i]*100), a=Math.min(80,Math.abs(v)*0.9);
+    return `<td style="background:color-mix(in srgb, var(${v>=0?'--accent':'--c2'}) ${a}%, var(--surface));color:${a>50?'var(--on-c)':'var(--ink)'}">${v>0?'+':''}${v}</td>`; }).join('');
+  $('#sndStrip').innerHTML = `<table><tbody><tr><th></th>${idx.map((_,n)=>`<td class="idx">${n+1}번</td>`).join('')}</tr><tr><th>떨림 크기</th>${cells}</tr></tbody></table>`;
+}
+function renderSoundTop(playT){ const k=snd.cur; drawWave($('#sndFull'), voice(k), {h:170, win:snd.win, labels:true, ts:VOICES[k].ts, playT}); }
+const SC=['girl','girl2','boy'];
+function buildSoundCompare(){
+  $('#sndCmp').innerHTML = SC.map((k,i)=>`
+    <article class="ccard" data-k="${k}">
+      <header><h3>${VOICES[k].name}</h3><span class="tag${i?' verdict':''}">${i?'':'기준'}</span><button class="btn sm" data-play="${k}">▶ 듣기</button></header>
+      <div class="k">'안' 소리를 0.02초만 확대</div>
+      <canvas class="cz" style="height:90px"></canvas>
+      <p class="stat"></p>
+      ${i?'<div class="meter"><div class="mrow"><span>여학생과 닮은 정도</span><b class="num pct"></b></div><div class="bar"><i></i></div></div>':''}
+    </article>`).join('');
+  $('#sndCmp').addEventListener('click', e=>{ const b=e.target.closest('[data-play]'); if(b) playVoice(b.dataset.play); });
+}
+function renderSoundCompare(){
+  const base=feat('girl'), col=tok('--accent');
+  $$('#sndCmp .ccard').forEach(card=>{
+    const k=card.dataset.k, x=voice(k), f=feat(k), ts=VOICES[k].ts;
+    const {ctx,w,h}=setupCanvas($('.cz',card),90), s0=Math.floor(0.13*ts*SR), n=Math.floor(0.02*SR);
+    ctx.strokeStyle=tok('--line'); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
+    ctx.strokeStyle=col; ctx.lineWidth=2; ctx.beginPath(); for(let i=0;i<n;i++){ const xx=i/n*w, yy=h/2-x[s0+i]*h*0.46; i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy); } ctx.stroke();
+    const high=f.pitch>170;
+    $('.stat',card).innerHTML = `1초에 <b>${Math.round(f.pitch)}번</b> 떨려요<br>→ ${high?'빠르게 떨리는 <b>높은 목소리</b>':'천천히 떨리는 <b>낮은 목소리</b>'}`;
+    if(k==='girl') return;
+    const envS=Math.max(0,pearson(base.env,f.env)), pS=1-Math.abs(base.pitch-f.pitch)/Math.max(base.pitch,f.pitch), tot=Math.round((envS+pS)/2*100);
+    $('.pct',card).textContent=tot+'%'; $('.bar i',card).style.width=tot+'%';
+    const v=$('.verdict',card); v.textContent=tot>=85?'비슷해요':'달라요'; v.className='tag verdict '+(tot>=85?'same':'diff');
+  });
+}
+function renderSound(){ renderSoundTop(); renderSoundZoom(); renderSoundCompare(); }
+async function playVoice(k){
+  const x=voice(k); if(!snd.actx) snd.actx=new (window.AudioContext||window.webkitAudioContext)();
+  const ctx=snd.actx; try{ await ctx.resume(); }catch(e){}
+  if(snd.play){ try{ snd.play.src.stop(); }catch(e){} }
+  const buf=ctx.createBuffer(1,x.length,SR); buf.copyToChannel(x,0);
+  const src=ctx.createBufferSource(); src.buffer=buf; src.connect(ctx.destination); src.start();
+  const p=snd.play={src,t0:ctx.currentTime,dur:x.length/SR,k};
+  src.onended=()=>{ if(snd.play===p){ snd.play=null; if(current()==='sound') renderSoundTop(); } };
+  const tick=()=>{ if(snd.play!==p) return; const t=ctx.currentTime-p.t0; if(p.k===snd.cur && current()==='sound') renderSoundTop(Math.min(t,p.dur)); if(t<p.dur) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+}
+function initSound(){
+  buildSoundCompare();
+  segInit($('#sndPick'), v=>{ snd.cur=v; snd.win=0.10*VOICES[v].ts; renderSoundTop(); renderSoundZoom(); });
+  $('#sndPlay').addEventListener('click', ()=>playVoice(snd.cur));
+  const cv=$('#sndFull'); let drag=false;
+  const move=e=>{ const T=voice(snd.cur).length/SR, b=cv.getBoundingClientRect(); snd.win=clamp((e.clientX-b.left)/b.width*T-ZOOM/2, 0, T-ZOOM); renderSoundTop(); renderSoundZoom(); };
+  cv.addEventListener('pointerdown', e=>{ drag=true; cv.setPointerCapture(e.pointerId); move(e); });
+  cv.addEventListener('pointermove', e=>{ if(drag) move(e); });
+  cv.addEventListener('pointerup', ()=>drag=false); cv.addEventListener('pointercancel', ()=>drag=false);
+}
+
+/* ================= TEXT ================= */
+const VOC = {
+  '는':12,'은':13,'이':14,'가':15,'을':16,'를':17,'에':18,'에서':19,'의':20,'도':21,'와':22,'과':23,
+  '다':30,'아요':31,'어요':32,'요':33,'해요':34,'워요':36,'아':38,'어':39,
+  '나':1203,'너':1207,'우리':1215,'강아지':2381,'고양이':2394,'사과':3057,'나무':3062,'돌':3080,'급식':3122,
+  '학교':4005,'학생':4012,'선생님':4019,'수업':4033,'공부':4041,'인공지능':4180,'데이터':4192,'알고리즘':4203,'미래':4310,'꿈':4402,'상상':4415,
+  '좋':5101,'싫':5102,'귀여':5120,'맛있':5133,'재미있':5140
+};
+const KEYS = Object.keys(VOC).sort((a,b)=>b.length-a.length);
+function tokenize(s){ const out=[]; for(const w of s.trim().split(/\s+/).filter(Boolean)){ let i=0; while(i<w.length){ const k=KEYS.find(k=>w.startsWith(k,i)); if(k){ out.push([k,VOC[k]]); i+=k.length; } else { out.push([w[i],1]); i++; } } } return out; }
+function renderTokens(){
+  const toks=tokenize($('#txtIn').value);
+  const cls=t=>'chip'+(t[1]>1000?'':' part');
+  $('#txtTok').innerHTML = toks.length ? toks.map(t=>`<span class="${cls(t)}">${t[0]}</span>`).join('') : '<span class="hint">문장을 입력해 보세요.</span>';
+  $('#txtIds').innerHTML = toks.map(t=>`<span class="chip id">${t[1]}</span>`).join('');
+}
+/* 임베딩 좌표 (설명용): 가로 = AI·기술과의 관련성, 세로 = 위는 추상적, 아래는 구체적 */
+const EMB = {
+  '꿈':[-0.35,0.92], '철학':[-0.6,0.72], '상상':[-0.78,0.38], '혁신':[0.32,0.62], '미래':[0.62,0.78], 'AI 리서치':[0.88,0.48],
+  '데이터':[0.9,-0.22], '알고리즘':[0.74,-0.46], '머신러닝':[0.5,-0.66], '로보틱스':[0.3,-0.9],
+  '나무':[-0.4,-0.8], '돌':[-0.7,-0.5], '사과':[-0.86,-0.22]
+};
+const txt = { sel:['데이터','알고리즘'] };
+function angleOf(a,b){ const u=EMB[a], v=EMB[b]; const c=(u[0]*v[0]+u[1]*v[1])/(Math.hypot(...u)*Math.hypot(...v)); return Math.round(Math.acos(clamp(c,-1,1))*180/Math.PI); }
+const EMB_PAD=14, EMB_X=[-1.5,1.5], EMB_Y=[-1.12,1.12], EMB_H=380;
+function renderEmb(){
+  const [a,b]=txt.sel, ang=angleOf(a,b);
+  $$('#wordBtns .btn').forEach(x=>{ x.classList.toggle('a',x.dataset.w===a); x.classList.toggle('b',x.dataset.w===b); });
+  const fmt=v=>v.toFixed(2);
+  $('#coord').innerHTML = `<span class="a">${a} = [${fmt(EMB[a][0])}, ${fmt(EMB[a][1])}]</span><span class="b">${b} = [${fmt(EMB[b][0])}, ${fmt(EMB[b][1])}]</span>`;
+  $('#angle').textContent = ang+'°';
+  $('#angleTxt').innerHTML = ang<45 ? '화살표 방향이 거의 같아요 → <b>뜻이 비슷한 단어</b>' : ang<100 ? '방향이 꽤 달라요 → <b>관련이 적은 단어</b>' : '거의 반대 방향이에요 → <b>뜻이 먼 단어</b>';
+  const F=frame($('#embMap'),EMB_H,{x:EMB_X, y:EMB_Y, pad:{l:EMB_PAD,r:EMB_PAD,t:EMB_PAD,b:EMB_PAD}});
+  const {ctx,X,Y,w,h}=F; const ink=tok('--ink'), mut=tok('--muted');
+  ctx.fillStyle=tok('--surface2'); ctx.beginPath(); ctx.roundRect(0,0,w,h,14); ctx.fill();
+  const arrow=(x1,y1,x2,y2,col,lw,dash)=>{ ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=lw; ctx.setLineDash(dash||[]); ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+    const t=Math.atan2(y2-y1,x2-x1), s=lw*3+4; ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-s*Math.cos(t-0.4),y2-s*Math.sin(t-0.4)); ctx.lineTo(x2-s*Math.cos(t+0.4),y2-s*Math.sin(t+0.4)); ctx.closePath(); ctx.fill(); };
+  arrow(X(-1.15),Y(0),X(1.18),Y(0),ink,1.5); arrow(X(0),Y(-1.05),X(0),Y(1.08),ink,1.5);
+  ctx.fillStyle=mut; ctx.font=FONT(12,700); ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('관련성 (AI와 가까움) →', X(1.18), Y(0)+8);
+  ctx.textAlign='left'; ctx.fillText('↑ 추상적', X(0)+8, Y(1.08)); ctx.textBaseline='bottom'; ctx.fillText('↓ 구체적', X(0)+8, Y(-1.05));
+  const ta=Math.atan2(EMB[a][1],EMB[a][0]), tb=Math.atan2(EMB[b][1],EMB[b][0]);
+  let d=tb-ta; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI;
+  ctx.strokeStyle=tok('--accent'); ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(X(0),Y(0),34,-ta,-(ta+d),d>0); ctx.stroke();
+  const order=Object.keys(EMB).sort((p,q)=>(p===a||p===b)-(q===a||q===b));
+  for(const wd of order){ const [ex,ey]=EMB[wd];
+    const on=wd===a?tok('--accent'):wd===b?tok('--c2'):null;
+    arrow(X(0),Y(0),X(ex),Y(ey), on||mut, on?3:1.2, on?null:[4,4]);
+    ctx.fillStyle=on?ink:mut; ctx.font=on?FONT(15,800):FONT(13,600);
+    ctx.textAlign = ex>0.15?'left':ex<-0.15?'right':'center'; ctx.textBaseline = ey>0?'bottom':'top';
+    ctx.fillText(wd, X(ex)+(ex>0.15?6:ex<-0.15?-6:0), Y(ey)+(ey>0?-5:5));
+  }
+}
+function pickWord(w){ if(txt.sel.includes(w)) return; txt.sel=[txt.sel[1],w]; renderEmb(); }
+function renderText(){ renderTokens(); renderEmb(); }
+function initText(){
+  const ex=['나는 인공지능 수업이 좋아요','강아지는 귀여워요','학생은 학교에서 공부해요'];
+  $('#txtEx').innerHTML = ex.map(s=>`<button class="btn sm" data-s="${s}">${s}</button>`).join('');
+  $('#txtEx').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b){ $('#txtIn').value=b.dataset.s; renderTokens(); } });
+  $('#txtIn').addEventListener('input', renderTokens);
+  $('#wordBtns').innerHTML = Object.keys(EMB).map(w=>`<button class="btn sm" data-w="${w}">${w}</button>`).join('');
+  $('#wordBtns').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) pickWord(b.dataset.w); });
+  const cv=$('#embMap');
+  cv.addEventListener('pointerdown', e=>{ const r=cv.getBoundingClientRect(), px=e.clientX-r.left, py=e.clientY-r.top;
+    const X=v=>EMB_PAD+(v-EMB_X[0])/(EMB_X[1]-EMB_X[0])*(r.width-2*EMB_PAD), Y=v=>EMB_H-EMB_PAD-(v-EMB_Y[0])/(EMB_Y[1]-EMB_Y[0])*(EMB_H-2*EMB_PAD);
+    let best=null, bd=40; for(const [wd,[ex,ey]] of Object.entries(EMB)){ const d=Math.hypot(X(ex)-px,Y(ey)-py); if(d<bd){bd=d;best=wd;} }
+    if(best) pickWord(best); });
+}
+
+/* ================= NUMBER ================= */
+const DAYS = [{d:'월',t:21,r:0},{d:'화',t:23,r:0},{d:'수',t:26,r:0},{d:'목',t:24,r:3},{d:'금',t:19,r:12},{d:'토',t:22,r:1},{d:'일',t:27,r:0}];
+const ICE = [[18,42],[20,55],[22,61],[24,74],[26,80],[28,95],[30,102],[32,115]];
+const fit = (()=>{ const n=ICE.length, mx=ICE.reduce((s,p)=>s+p[0],0)/n, my=ICE.reduce((s,p)=>s+p[1],0)/n; let c=0,v=0; for(const [x,y] of ICE){ c+=(x-mx)*(y-my); v+=(x-mx)**2; } const a=c/v; return {a,b:my-a*mx}; })();
+const numS = { day:2 };
+const TPAD = {l:40,r:14,t:34,b:34};
+function renderTemp(){
+  const F=frame($('#tempChart'),300,{x:[0,7], y:[0,34], yt:[0,10,20,30], yl:'기온(℃)', pad:TPAD});
+  const {ctx,X,Y,h}=F, bw=X(1)-X(0), acc=tok('--accent');
+  DAYS.forEach((d,i)=>{ const on=i===numS.day, x0=X(i)+bw*0.2, ww=bw*0.6;
+    ctx.fillStyle = on?acc:tok('--accent-soft'); ctx.beginPath(); ctx.roundRect(x0,Y(d.t),ww,Y(0)-Y(d.t),[6,6,0,0]); ctx.fill();
+    ctx.fillStyle=tok('--ink'); ctx.font=FONT(13,800); ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(d.t+'℃', x0+ww/2, Y(d.t)-4);
+    ctx.textBaseline='top'; ctx.fillStyle=on?acc:tok('--muted'); ctx.font=FONT(14,800); ctx.fillText(d.d, x0+ww/2, h-26);
+    if(i>0){ const diff=d.t-DAYS[i-1].t; ctx.font=FONT(11,800); ctx.fillStyle = diff>=0?acc:tok('--bad'); ctx.textBaseline='bottom';
+      ctx.fillText(diff>=0?`▲${diff}`:`▼${-diff}`, X(i), Y(Math.max(d.t,DAYS[i-1].t))-22); }
+  });
+  const d=DAYS[numS.day], p=DAYS[numS.day-1], max=Math.max(...DAYS.map(x=>x.t));
+  $('#dayName').textContent = `${d.d}요일`;
+  const change = p ? (d.t>p.t ? `어제(${p.d})보다 <b>${d.t-p.t}℃ 올랐어요 ▲</b>` : d.t<p.t ? `어제(${p.d})보다 <b>${p.t-d.t}℃ 내려갔어요 ▼</b>` : '어제와 같아요') : '첫날이라 비교할 어제가 없어요';
+  $('#dayFact').innerHTML = `<b>크기</b> 기온 ${d.t}℃, 강수량 ${d.r}mm<br><b>변화</b> ${change}<br><b>차이</b> ${d.t===max?'이번 주에서 가장 더운 날이에요':`가장 더운 날(${DAYS.find(x=>x.t===max).d})보다 ${max-d.t}℃ 낮아요`}<br><b>AI에게 주는 숫자</b> <span class="num">[${d.t}, ${d.r}]</span>`;
+}
+function renderIce(){
+  const t=+$('#newT').value, pred=fit.a*t+fit.b;
+  $('#newTv').textContent=t+'℃'; $('#newIce').textContent=Math.round(pred)+'개';
+  $('#iceRule').innerHTML = `기온이 <b>1℃</b> 오를 때마다 아이스크림이 약 <b>${fit.a.toFixed(1)}개</b> 더 팔려요.`;
+  const F=frame($('#iceChart'),320,{x:[14,36], y:[0,140], xt:[14,18,22,26,30,34], yt:[0,40,80,120], xl:'기온(℃) →', yl:'판매량(개)', pad:{t:30}});
+  const {ctx,X,Y}=F, acc=tok('--accent');
+  ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(X(14),Y(fit.a*14+fit.b)); ctx.lineTo(X(36),Y(fit.a*36+fit.b)); ctx.stroke();
+  ctx.fillStyle=tok('--ink'); for(const [x,y] of ICE){ ctx.beginPath(); ctx.arc(X(x),Y(y),5.5,0,Math.PI*2); ctx.fill(); }
+  ctx.setLineDash([4,4]); ctx.strokeStyle=tok('--muted'); ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(X(t),Y(0)); ctx.lineTo(X(t),Y(pred)); ctx.lineTo(X(14),Y(pred)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=tok('--surface'); ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(X(t),Y(pred),8,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=tok('--ink'); ctx.font=FONT(13,800); ctx.textAlign=t>30?'right':'left'; ctx.textBaseline='bottom'; ctx.fillText(`예상 ${Math.round(pred)}개`, X(t)+(t>30?-12:12), Y(pred)-8);
+}
+function renderNumber(){ renderTemp(); renderIce(); }
+function initNumber(){
+  $('#tempChart').addEventListener('pointerdown', e=>{ const r=e.currentTarget.getBoundingClientRect(); const i=Math.floor((e.clientX-r.left-TPAD.l)/((r.width-TPAD.l-TPAD.r)/7)); if(i>=0&&i<7){ numS.day=i; renderTemp(); } });
+  $('#newT').addEventListener('input', renderIce);
+}
+
+/* ================= router ================= */
+const R = { home:()=>{}, image:renderImage, sound:renderSound, text:renderText, number:renderNumber };
+function current(){ const h=location.hash.slice(1); return R[h]?h:'home'; }
+function route(scroll){ const v=current(); for(const k in R) $('#view-'+k).hidden=k!==v; $('#topnav').hidden=v==='home';
+  $$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v)); R[v](); if(scroll) window.scrollTo(0,0); }
+initImage(); initSound(); initText(); initNumber();
+window.addEventListener('hashchange', ()=>route(true));
+let rz; window.addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(()=>R[current()](),120); });
+const mq=window.matchMedia('(prefers-color-scheme: dark)'); if(mq.addEventListener) mq.addEventListener('change', ()=>R[current()]());
+new MutationObserver(()=>R[current()]()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>R[current()]());
+route(false);
+</script>
+</body>
+</html>
