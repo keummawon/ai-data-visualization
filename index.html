@@ -159,15 +159,8 @@ table.mltable{border-collapse:collapse;font-size:14px;width:100%;min-width:560px
 .mltable .ans{background:color-mix(in srgb,var(--c2) 18%,var(--surface))}
 .mltable thead .feat,.mltable thead .ans{color:var(--ink)}
 .mltable .err{color:var(--muted);font-size:13px}
-.wlist{display:grid;gap:12px}
-.wrow{display:grid;grid-template-columns:56px minmax(0,1fr);gap:4px 12px;align-items:center}
-.wname{font-weight:800}
-.wbar{height:14px;background:var(--surface2);border-radius:99px;position:relative;overflow:hidden}
-.wbar::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--line)}
-.wbar i{position:absolute;left:50%;top:0;bottom:0;background:var(--accent);border-radius:0 99px 99px 0}
-.wbar i.neg{left:auto;right:50%;background:var(--bad);border-radius:99px 0 0 99px}
-.wtxt{grid-column:2;font-size:14px;color:var(--muted)}
-.wtxt b{color:var(--ink)}
+#patTable{min-width:0;font-size:13px}
+#patTable th,#patTable td{padding:6px 5px}
 .judge{display:grid;gap:10px}
 .jhead{font-size:17px;margin-top:6px}
 .jrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
@@ -443,6 +436,7 @@ table.mltable{border-collapse:collapse;font-size:14px;width:100%;min-width:560px
   <header class="vhead">
     <span class="dlabel">수치 데이터</span>
     <h1>수치 데이터는 크기와 양을 숫자로 바로 나타냅니다</h1>
+    <p class="fact">수치 데이터는 크기나 양을 <b>숫자로 직접</b> 표현합니다. 인공지능은 이러한 수치 값들을 입력으로 받아 <b>크기, 차이, 증가·감소 관계</b>를 계산해서 <b>패턴</b>을 학습합니다.</p>
     <div class="vals">
       <div><span>기온</span><b class="num">27<small>℃</small></b></div>
       <div><span>강수량</span><b class="num">12<small>mm</small></b></div>
@@ -466,40 +460,28 @@ table.mltable{border-collapse:collapse;font-size:14px;width:100%;min-width:560px
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>2</b>특징과 정답으로 인공지능 학습시키기</div>
-    <p class="pdesc">하루의 <b>특징</b>(기온, 강수량, 주말 여부)과 그날의 <b>정답</b>(아이스크림 판매량)을 함께 알려 주면, 인공지능은 특징과 정답 사이의 관계를 스스로 찾아냅니다. 정답을 알려 주며 학습시키는 방법을 <b>지도 학습</b>이라고 합니다.</p>
-    <div class="strip"><table class="mltable" id="mlTable"></table></div>
+    <div class="ptitle"><b>2</b>기온과 아이스크림 판매량에서 패턴 찾기</div>
+    <p class="pdesc">8일 동안의 기온과 아이스크림 판매량입니다. 인공지능은 하루씩 숫자의 <b>크기</b>와 전날과의 <b>차이</b>를 계산하고, 두 값이 함께 <b>증가·감소</b>하는지 살펴 패턴을 찾습니다.</p>
     <div class="controls">
-      <button class="btn primary" id="mlTrain">▶ 학습 시작</button>
-      <button class="btn sm" id="mlReset">처음부터 다시</button>
-      <span class="stat" id="mlStatus"></span>
+      <button class="btn primary" id="patRun">▶ 인공지능이 패턴 찾기</button>
+      <button class="btn sm" id="patReset">처음부터 다시</button>
     </div>
-    <div class="grid2">
-      <div class="stack">
-        <div class="k">학습 횟수에 따른 평균 오차(개)</div>
-        <canvas id="mlLoss" style="height:220px"></canvas>
-      </div>
-      <div class="stack">
-        <div class="k">인공지능이 찾은 특징의 영향</div>
-        <div class="wlist" id="mlWeights"></div>
-        <p class="hint">학습을 반복할수록 오차가 줄어들고, 각 특징이 판매량에 주는 영향이 정해집니다.</p>
-      </div>
-    </div>
+    <div class="strip"><table class="mltable" id="patTable"></table></div>
+    <canvas id="patChart" style="height:280px;max-width:640px"></canvas>
+    <p class="fact" id="patFact"></p>
   </div>
 
   <div class="panel">
-    <div class="ptitle"><b>3</b>학습한 모델로 예측하기</div>
-    <p class="pdesc">처음 보는 날의 특징을 넣으면, 학습한 모델이 판매량을 예측합니다. 숫자를 예측하는 이런 모델을 <b>회귀 모델</b>이라고 합니다.</p>
+    <div class="ptitle"><b>3</b>찾은 패턴으로 예측하기</div>
     <div class="grid2">
       <div class="sliders">
-        <label class="sl"><span>기온</span><input type="range" id="pT" min="14" max="36" value="29"><output id="opT" class="num"></output></label>
-        <label class="sl"><span>강수량</span><input type="range" id="pR" min="0" max="20" value="0"><output id="opR" class="num"></output></label>
-        <div class="controls"><span class="k">요일</span><div class="seg" id="pW"><button data-v="0" class="on">평일</button><button data-v="1">주말</button></div></div>
+        <label class="sl"><span>내일 기온</span><input type="range" id="pT" min="14" max="36" value="29"><output id="opT" class="num"></output></label>
+        <p class="hint">기온을 바꾸면 찾은 패턴에 따라 판매량을 예측합니다.</p>
       </div>
       <div class="predict">
         <div class="k">예상 판매량</div>
         <div class="val num" id="pVal"></div>
-        <div class="stat num" id="pFormula"></div>
+        <div class="stat" id="pFormula"></div>
       </div>
     </div>
   </div>
@@ -510,7 +492,7 @@ table.mltable{border-collapse:collapse;font-size:14px;width:100%;min-width:560px
     <p class="fact">인공지능은 <b>수치 값</b>을 입력받아 값의 <b>크기, 차이, 증가·감소 관계</b> 등을 계산하여 <b>패턴</b>을 학습합니다.</p>
     <h3 class="jhead">① 기온 데이터 간 관계 분석</h3>
     <div class="judge" id="numJudge"></div>
-    <h3 class="jhead">② 특징과 아이스크림 판매량의 관계 분석</h3>
+    <h3 class="jhead">② 기온과 아이스크림 판매량의 관계 분석</h3>
     <div class="judge" id="iceJudge"></div>
   </div>
 </section>
@@ -973,79 +955,61 @@ function renderNumJudge(){
   renderIceJudge();
 }
 const jrows = rows => rows.map(([who,why,tag])=>`<div class="jrow"><span class="who">${who}</span><span class="tag same">${tag}</span><span class="why">${why}</span></div>`).join('');
-/* 지도 학습 예시: 특징 [기온℃, 강수량mm, 주말(1)/평일(0)] → 정답 아이스크림 판매량(개) */
-const ML_DATA = [
-  [18,0,0,66],[20,5,0,63],[22,0,1,107],[24,0,0,88],[25,12,0,65],
-  [27,0,1,120],[28,3,0,95],[30,0,0,104],[31,0,1,136],[33,8,0,101]
-];
-const FEATS = [['기온','℃'],['강수량','mm'],['주말','']];
-const ML_EPOCHS = 200, ML_LR = 0.015;
-const mlStat = (()=>{ const n=ML_DATA.length, mean=[0,1,2].map(j=>ML_DATA.reduce((s,r)=>s+r[j],0)/n);
-  const sd=[0,1,2].map(j=>Math.sqrt(ML_DATA.reduce((s,r)=>s+(r[j]-mean[j])**2,0)/n)); return {mean,sd}; })();
-const ml = { w:[0,0,0], b:0, epoch:0, loss:[], timer:null };
-const zf = r => [0,1,2].map(j=>(r[j]-mlStat.mean[j])/mlStat.sd[j]);
-const mlPred = r => ml.b + zf(r).reduce((s,z,j)=>s+ml.w[j]*z,0);
-const mlMAE = () => ML_DATA.reduce((s,r)=>s+Math.abs(mlPred(r)-r[3]),0)/ML_DATA.length;
-function mlStep(){ const n=ML_DATA.length, gw=[0,0,0]; let gb=0;
-  for(const r of ML_DATA){ const e=mlPred(r)-r[3], z=zf(r); gb+=e; z.forEach((v,j)=>gw[j]+=e*v); }
-  ml.b-=ML_LR*gb/n*2; ml.w=ml.w.map((w,j)=>w-ML_LR*gw[j]/n*2); ml.epoch++; ml.loss.push(mlMAE()); }
-/* 표준화된 가중치를 원래 단위로: 특징이 1 늘 때 판매량 변화 */
-const mlUnitW = () => ml.w.map((w,j)=>w/mlStat.sd[j]);
-const mlBias = () => ml.b - ml.w.reduce((s,w,j)=>s+w*mlStat.mean[j]/mlStat.sd[j],0);
-function mlReset(){ clearInterval(ml.timer); ml.timer=null; ml.w=[0,0,0]; ml.b=0; ml.epoch=0; ml.loss=[mlMAE()]; renderML(); }
-function mlTrain(){ if(ml.timer) return; if(ml.epoch>=ML_EPOCHS) mlReset();
-  ml.timer=setInterval(()=>{ for(let i=0;i<4&&ml.epoch<ML_EPOCHS;i++) mlStep(); renderML(); if(ml.epoch>=ML_EPOCHS){ clearInterval(ml.timer); ml.timer=null; renderML(); } }, 40); }
-function renderML(){
-  const trained=ml.epoch>0;
-  let h=`<thead><tr><th></th><th colspan="3" class="feat">특징 (입력)</th><th class="ans">정답</th><th>AI 예측</th><th>오차</th></tr>
-    <tr><th>날</th>${FEATS.map(([nm,u])=>`<th class="feat">${nm}${u?`(${u})`:''}</th>`).join('')}<th class="ans">판매량(개)</th><th>판매량(개)</th><th></th></tr></thead><tbody>`;
-  ML_DATA.forEach((r,i)=>{ const p=mlPred(r), e=p-r[3];
-    h+=`<tr><td>${i+1}일째</td><td class="feat">${r[0]}</td><td class="feat">${r[1]}</td><td class="feat">${r[2]?'주말':'평일'}</td><td class="ans"><b>${r[3]}</b></td><td>${trained?Math.round(p):'?'}</td><td class="err">${trained?(e>=0?'+':'')+Math.round(e):''}</td></tr>`; });
-  $('#mlTable').innerHTML = h+'</tbody>';
-  const mae=ml.loss[ml.loss.length-1]||mlMAE();
-  $('#mlStatus').innerHTML = ml.timer ? `학습 중… <b>${ml.epoch}번</b> 반복, 평균 오차 <b>${mae.toFixed(1)}개</b>`
-    : trained ? `학습 완료: <b>${ml.epoch}번</b> 반복, 평균 오차 <b>${mae.toFixed(1)}개</b>` : '아직 학습하지 않았습니다. 예측값은 모두 0개에서 시작합니다.';
-  $('#mlTrain').textContent = ml.timer ? '학습 중…' : trained ? '▶ 다시 학습' : '▶ 학습 시작';
-  // 오차 그래프
-  const maxL=Math.ceil((ml.loss[0]||100)/20)*20;
-  const F=frame($('#mlLoss'),220,{x:[0,ML_EPOCHS], y:[0,maxL], xt:[0,50,100,150,200], yt:[0,maxL/2,maxL], xl:'학습 횟수 →'});
-  const {ctx,X,Y}=F; ctx.strokeStyle=tok('--accent'); ctx.lineWidth=3; ctx.beginPath();
-  ml.loss.forEach((l,i)=>{ i?ctx.lineTo(X(i),Y(l)):ctx.moveTo(X(i),Y(l)); }); ctx.stroke();
-  if(ml.loss.length){ const i=ml.loss.length-1; ctx.fillStyle=tok('--accent'); ctx.beginPath(); ctx.arc(X(i),Y(ml.loss[i]),5,0,Math.PI*2); ctx.fill(); }
-  // 가중치
-  const uw=mlUnitW(), maxAbs=Math.max(1,...ml.w.map(Math.abs));
-  const txt=[v=>`기온이 1℃ 오르면 <b>${v>=0?'+':''}${v.toFixed(1)}개</b>`, v=>`강수량이 1mm 늘면 <b>${v>=0?'+':''}${v.toFixed(1)}개</b>`, v=>`주말이면 <b>${v>=0?'+':''}${v.toFixed(0)}개</b>`];
-  $('#mlWeights').innerHTML = FEATS.map(([nm],j)=>`<div class="wrow"><span class="wname">${nm}</span><div class="wbar"><i class="${ml.w[j]<0?'neg':''}" style="width:${Math.abs(ml.w[j])/maxAbs*50}%"></i></div><span class="wtxt">${trained?txt[j](uw[j]):'학습 전'}</span></div>`).join('');
+/* 8일 동안의 [기온℃, 아이스크림 판매량(개)] 예시 데이터 */
+const PAT = [[21,62],[23,72],[26,85],[24,76],[19,52],[22,66],[27,90],[30,101]];
+const patFit = (()=>{ const n=PAT.length, mx=PAT.reduce((s,p)=>s+p[0],0)/n, my=PAT.reduce((s,p)=>s+p[1],0)/n; let c=0,v=0; for(const [x,y] of PAT){ c+=(x-mx)*(y-my); v+=(x-mx)**2; } const a=c/v; return {a,b:my-a*mx}; })();
+const pat = { step:0, timer:null };   // step: 비교를 마친 날 수(0~8)
+const patDone = () => pat.step>=PAT.length;
+const sgn = v => v>0?`<span style="color:var(--accent)">▲${v}</span>`:v<0?`<span style="color:var(--bad)">▼${-v}</span>`:'0';
+function patRun(){ if(pat.timer) return; if(patDone()) pat.step=0;
+  pat.timer=setInterval(()=>{ pat.step++; renderPat(); if(patDone()){ clearInterval(pat.timer); pat.timer=null; renderPat(); } }, 550); renderPat(); }
+function patReset(){ clearInterval(pat.timer); pat.timer=null; pat.step=0; renderPat(); }
+function renderPat(){
+  let h=`<thead><tr><th>날</th><th class="feat">기온(℃)</th><th class="ans">판매량(개)</th><th>기온 차이</th><th>판매량 차이</th><th>관계</th></tr></thead><tbody>`;
+  let same=0, cmp=0;
+  PAT.forEach((p,i)=>{ const seen=i<pat.step, cur=i===pat.step-1 && !!pat.timer;
+    let dt='', ds='', rel='';
+    if(seen && i>0){ const a=p[0]-PAT[i-1][0], b=p[1]-PAT[i-1][1]; dt=sgn(a); ds=sgn(b+0); cmp++; if(Math.sign(a)===Math.sign(b)){ same++; rel=a>0?'같이 증가':'같이 감소'; } else rel='반대'; }
+    else if(seen) rel='첫날';
+    h+=`<tr style="${cur?'outline:3px solid var(--accent);outline-offset:-3px':''}${seen?'':';opacity:.45'}"><td>${i+1}일째</td><td class="feat">${p[0]}</td><td class="ans"><b>${p[1]}</b></td><td>${dt}</td><td>${ds}</td><td><b>${rel}</b></td></tr>`; });
+  $('#patTable').innerHTML=h+'</tbody>';
+  // 그래프
+  const F=frame($('#patChart'),300,{x:[16,32], y:[40,110], xt:[16,20,24,28,32], yt:[40,60,80,100], xl:'기온(℃) →', yl:'판매량(개)', pad:{t:30}});
+  const {ctx,X,Y}=F, acc=tok('--accent');
+  if(patDone()){ ctx.strokeStyle=acc; ctx.lineWidth=3; ctx.setLineDash([6,5]); ctx.beginPath(); ctx.moveTo(X(16),Y(patFit.a*16+patFit.b)); ctx.lineTo(X(32),Y(patFit.a*32+patFit.b)); ctx.stroke(); ctx.setLineDash([]); }
+  PAT.forEach((p,i)=>{ const seen=i<pat.step; ctx.fillStyle=seen?acc:tok('--line'); ctx.beginPath(); ctx.arc(X(p[0]),Y(p[1]),seen?7:6,0,Math.PI*2); ctx.fill();
+    if(i===pat.step-1){ ctx.strokeStyle=tok('--ink'); ctx.lineWidth=2; ctx.beginPath(); ctx.arc(X(p[0]),Y(p[1]),11,0,Math.PI*2); ctx.stroke(); } });
+  // 설명
+  const hi=PAT.reduce((a,p)=>p[1]>a[1]?p:a), lo=PAT.reduce((a,p)=>p[1]<a[1]?p:a);
+  $('#patFact').innerHTML = !pat.step ? '버튼을 누르면 인공지능이 하루씩 숫자를 비교합니다.'
+    : !patDone() ? `${pat.step}일째 비교 중… 지금까지 ${cmp}번 중 <b>${same}번</b> 기온과 판매량이 같은 방향으로 변했습니다.`
+    : `<b>찾은 패턴</b><br>· 크기: 판매량이 가장 많은 날은 ${hi[0]}℃(${hi[1]}개), 가장 적은 날은 ${lo[0]}℃(${lo[1]}개)<br>· 증가·감소: ${cmp}번 중 <b>${same}번</b> 기온과 판매량이 같은 방향으로 변했습니다<br>· 패턴: <b>기온이 오르면 판매량도 오르고, 기온이 내리면 판매량도 내립니다.</b> 기온 1℃마다 약 <b>${patFit.a.toFixed(1)}개</b>씩 달라집니다`;
+  $('#patRun').textContent = pat.timer ? '찾는 중…' : patDone() ? '▶ 다시 찾기' : '▶ 인공지능이 패턴 찾기';
   renderPredict(); renderIceJudge();
 }
 function renderPredict(){
-  const r=[+$('#pT').value, +$('#pR').value, +($('#pW .on')?.dataset.v||0)];
-  $('#opT').textContent=r[0]+'℃'; $('#opR').textContent=r[1]+'mm';
-  if(!ml.epoch){ $('#pVal').textContent='?'; $('#pFormula').textContent='먼저 2번에서 학습을 시켜 봅시다.'; return; }
-  const uw=mlUnitW(), b=mlBias();
-  $('#pVal').textContent=Math.max(0,Math.round(mlPred(r)))+'개';
-  $('#pFormula').innerHTML=`판매량 ≈ ${uw[0].toFixed(1)}×기온 ${uw[1]<0?'−':'+'} ${Math.abs(uw[1]).toFixed(1)}×강수량 + ${uw[2].toFixed(0)}×주말 ${b<0?'−':'+'} ${Math.abs(b).toFixed(0)}`;
+  const t=+$('#pT').value; $('#opT').textContent=t+'℃';
+  if(!patDone()){ $('#pVal').textContent='?'; $('#pFormula').textContent='먼저 2번에서 패턴을 찾아 봅시다.'; return; }
+  const p=Math.round(patFit.a*t+patFit.b);
+  $('#pVal').textContent=p+'개';
+  $('#pFormula').innerHTML=`기온 1℃마다 약 ${patFit.a.toFixed(1)}개씩 늘어나는 패턴으로 예측했습니다.`;
 }
 function renderIceJudge(){
-  const hi=ML_DATA.reduce((a,r)=>r[3]>a[3]?r:a), lo=ML_DATA.reduce((a,r)=>r[3]<a[3]?r:a);
-  const day=r=>`${r[0]}℃·${r[1]}mm·${r[2]?'주말':'평일'}`;
-  if(!ml.epoch){ $('#iceJudge').innerHTML = jrows([['크기·차이', `가장 많이 팔린 날(${day(hi)}) <b>${hi[3]}개</b>, 가장 적게 팔린 날(${day(lo)}) <b>${lo[3]}개</b>로 <b>${hi[3]-lo[3]}개</b> 차이가 납니다`, `차이 ${hi[3]-lo[3]}개`],['관계','2번에서 학습을 시키면 인공지능이 찾은 관계가 여기에 나타납니다','학습 전']]); return; }
-  const uw=mlUnitW(), r=[+$('#pT').value, +$('#pR').value, +($('#pW .on')?.dataset.v||0)], p=Math.max(0,Math.round(mlPred(r)));
-  $('#iceJudge').innerHTML = jrows([
-    ['크기·차이', `가장 많이 팔린 날(${day(hi)}) <b>${hi[3]}개</b>, 가장 적게 팔린 날(${day(lo)}) <b>${lo[3]}개</b>로 <b>${hi[3]-lo[3]}개</b> 차이가 납니다`, `차이 ${hi[3]-lo[3]}개`],
-    ['증가 관계', `기온이 1℃ 오를 때마다 판매량이 약 <b>${uw[0].toFixed(1)}개</b> 늘어납니다. 주말에는 약 <b>${uw[2].toFixed(0)}개</b> 더 팔립니다`, '기온 ▲·주말 → 판매량 ▲'],
-    ['감소 관계', `강수량이 1mm 늘 때마다 판매량이 약 <b>${Math.abs(uw[1]).toFixed(1)}개</b> 줄어듭니다`, '강수량 ▲ → 판매량 ▼'],
-    ['예측', `${r[0]}℃, ${r[1]}mm, ${r[2]?'주말':'평일'}인 날은 약 <b>${p}개</b> 팔릴 것으로 예측합니다`, `AI 판단: 약 ${p}개`]
-  ]);
+  const hi=PAT.reduce((a,p)=>p[1]>a[1]?p:a), lo=PAT.reduce((a,p)=>p[1]<a[1]?p:a);
+  const first=['크기·차이', `판매량이 가장 많은 날 <b>${hi[1]}개</b>(${hi[0]}℃), 가장 적은 날 <b>${lo[1]}개</b>(${lo[0]}℃)로 <b>${hi[1]-lo[1]}개</b> 차이가 납니다`, `차이 ${hi[1]-lo[1]}개`];
+  if(!patDone()){ $('#iceJudge').innerHTML=jrows([first,['패턴','2번에서 패턴을 찾으면 여기에 나타납니다','찾기 전']]); return; }
+  const t=+$('#pT').value, p=Math.round(patFit.a*t+patFit.b);
+  $('#iceJudge').innerHTML = jrows([first,
+    ['증가·감소 관계', `기온이 오른 날은 판매량도 오르고, 기온이 내린 날은 판매량도 내렸습니다`, '기온 ▲ → 판매량 ▲'],
+    ['패턴', `기온이 1℃ 오를 때마다 판매량이 약 <b>${patFit.a.toFixed(1)}개</b> 늘어납니다`, `1℃당 약 ${patFit.a.toFixed(1)}개`],
+    ['예측', `내일 기온이 <b>${t}℃</b>라면 판매량은 약 <b>${p}개</b>로 예측합니다`, `AI 판단: 약 ${p}개`]]);
 }
-function renderNumber(){ renderTemp(); renderNumJudge(); renderML(); }
+function renderNumber(){ renderTemp(); renderNumJudge(); renderPat(); }
 function initNumber(){
   $('#tempChart').addEventListener('pointerdown', e=>{ const r=e.currentTarget.getBoundingClientRect(); const i=Math.floor((e.clientX-r.left-TPAD.l)/((r.width-TPAD.l-TPAD.r)/7)); if(i>=0&&i<7){ numS.day=i; renderTemp(); } });
-  if(!ml.loss.length) ml.loss=[mlMAE()];
-  $('#mlTrain').addEventListener('click', mlTrain);
-  $('#mlReset').addEventListener('click', mlReset);
-  ['pT','pR'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ renderPredict(); renderIceJudge(); }));
-  segInit($('#pW'), ()=>{ renderPredict(); renderIceJudge(); });
+  $('#patRun').addEventListener('click', patRun);
+  $('#patReset').addEventListener('click', patReset);
+  $('#pT').addEventListener('input', ()=>{ renderPredict(); renderIceJudge(); });
 }
 
 /* ================= router ================= */
